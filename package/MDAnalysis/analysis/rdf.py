@@ -81,6 +81,7 @@ import numpy as np
 
 from ..lib import distances
 from .base import AnalysisBase
+from MDAnalysis.analysis.base import AnalysisBase, ResultsGroup
 
 
 class InterRDF(AnalysisBase):
@@ -250,6 +251,21 @@ class InterRDF(AnalysisBase):
             raise ValueError(f"'{self.norm}' is an invalid norm. "
                              "Use 'rdf', 'density' or 'none'.")
 
+    @classmethod
+    @property
+    def available_backends(cls):
+        return ('local', 'multiprocessing', 'dask', 'dask.distributed')
+
+    def _get_aggregator(self):
+        lookup = {
+            'count': ResultsGroup.ndarray_sum,
+            'edges': ResultsGroup.select_first,
+            'bins': ResultsGroup.select_first,
+            'volume_cum': ResultsGroup.float_sum,
+            'rdf': ResultsGroup.ndarray_sum,
+        }
+        return ResultsGroup(lookup=lookup)
+
     def _prepare(self):
         # Empty histogram to store the RDF
         count, edges = np.histogram([-1], **self.rdf_settings)
@@ -261,7 +277,7 @@ class InterRDF(AnalysisBase):
 
         if self.norm == "rdf":
             # Cumulative volume for rdf normalization
-            self.volume_cum = 0
+            self.results.volume_cum = 0
         # Set the max range to filter the search radius
         self._maxrange = self.rdf_settings['range'][1]
 
@@ -288,7 +304,7 @@ class InterRDF(AnalysisBase):
         self.results.count += count
 
         if self.norm == "rdf":
-            self.volume_cum += self._ts.volume
+            self.results.volume_cum += self._ts.volume
 
     def _conclude(self):
         norm = self.n_frames
@@ -310,7 +326,7 @@ class InterRDF(AnalysisBase):
                 N -= xA * xB * nblocks
 
             # Average number density
-            box_vol = self.volume_cum / self.n_frames
+            box_vol = self.results.volume_cum / self.n_frames
             norm *= N / box_vol
 
         self.results.rdf = self.results.count / norm
@@ -569,6 +585,21 @@ class InterRDF_s(AnalysisBase):
                           "MDAnalysis 3.0.0. Please use `norm=density` "
                           "instead.", DeprecationWarning)
             self.norm = "density"
+
+    @classmethod
+    @property
+    def available_backends(cls):
+        return ('local', 'multiprocessing', 'dask', 'dask.distributed')
+
+    def _get_aggregator(self):
+        lookup = {
+            'count': ResultsGroup.ndarray_sum,
+            'edges': ResultsGroup.select_first,
+            'bins': ResultsGroup.select_first,
+            'volume_cum': ResultsGroup.float_sum,
+            'rdf': ResultsGroup.ndarray_sum,
+        }
+        return ResultsGroup(lookup=lookup)
 
     def _prepare(self):
         count, edges = np.histogram([-1], **self.rdf_settings)

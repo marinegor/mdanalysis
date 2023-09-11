@@ -265,3 +265,11 @@ class ResultsGroup:
     @staticmethod
     def float_mean(floats: list[float]):
         return sum(floats) / len(floats)
+    
+    @staticmethod
+    def select_first(arrs: list):
+        return arrs[0]
+
+    @staticmethod
+    def float_sum(floats: list[float]):
+        return np.sum(floats)

@@ -12,6 +12,7 @@ from MDAnalysisTests.analysis.test_base import (
     OldAPIAnalysis,
 )
 from MDAnalysis.analysis.rms import RMSD, RMSF
+from MDAnalysis.analysis.rdf import InterRDF, InterRDF_s
 
 from MDAnalysis.analysis.parallel import BackendDaskDistributed
 from MDAnalysis.lib.util import is_installed
@@ -89,7 +90,16 @@ def inject_testing_fixture(fixture_name: str, class_name: type):
     caller_globals[fixture_name] = generate_client_fixture(class_name)
 
 
-classes = [AnalysisBase, AnalysisFromFunction, FrameAnalysis, IncompleteAnalysis, OldAPIAnalysis, RMSD, RMSF]
+classes = [
+    AnalysisBase,
+    AnalysisFromFunction,
+    FrameAnalysis,
+    IncompleteAnalysis,
+    OldAPIAnalysis,
+    RMSD,
+    RMSF,
+    InterRDF,
+]
 for cls in classes:
     name = cls.__name__
     fixture_name = f"client_{name}"
