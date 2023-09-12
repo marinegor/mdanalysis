@@ -99,6 +99,7 @@ classes = [
     RMSD,
     RMSF,
     InterRDF,
+    InterRDF_s,
 ]
 for cls in classes:
     name = cls.__name__

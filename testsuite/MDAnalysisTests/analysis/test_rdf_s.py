@@ -47,8 +47,8 @@ def sels(u):
 
 
 @pytest.fixture(scope='module')
-def rdf(u, sels):
-    return InterRDF_s(u, sels).run()
+def rdf(u, sels, client_InterRDF_s):
+    return InterRDF_s(u, sels).run(**client_InterRDF_s)
 
 
 def test_nbins(u, sels):

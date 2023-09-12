@@ -610,7 +610,7 @@ class InterRDF_s(AnalysisBase):
 
         if self.norm == "rdf":
             # Cumulative volume for rdf normalization
-            self.volume_cum = 0
+            self.results.volume_cum = 0
         self._maxrange = self.rdf_settings['range'][1]
 
     def _single_frame(self):
@@ -625,7 +625,7 @@ class InterRDF_s(AnalysisBase):
                 self.results.count[i][idx1, idx2, :] += count
 
         if self.norm == "rdf":
-            self.volume_cum += self._ts.volume
+            self.results.volume_cum += self._ts.volume
 
     def _conclude(self):
         norm = self.n_frames
@@ -636,7 +636,7 @@ class InterRDF_s(AnalysisBase):
 
         if self.norm == "rdf":
             # Average number density
-            norm *= 1 / (self.volume_cum / self.n_frames)
+            norm *= 1 / (self.results.volume_cum / self.n_frames)
 
         # Empty lists to restore indices, RDF
         self.results.indices = []
