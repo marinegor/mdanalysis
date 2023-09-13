@@ -254,14 +254,19 @@ class InterRDF(AnalysisBase):
     @classmethod
     @property
     def available_backends(cls):
-        return ('local', 'multiprocessing', 'dask', 'dask.distributed')
+        return ('serial', 'multiprocessing', 'dask')
+
+    @classmethod
+    @property
+    def _is_parallelizable(cls):
+        return True
 
     def _get_aggregator(self):
         lookup = {
             'count': ResultsGroup.ndarray_sum,
-            'edges': ResultsGroup.select_first,
-            'bins': ResultsGroup.select_first,
-            'volume_cum': ResultsGroup.float_sum,
+            'edges': lambda arr: arr[0],
+            'bins': lambda arr: arr[0],
+            'volume_cum': lambda arr: np.sum(arr, axis=0),
             'rdf': ResultsGroup.ndarray_sum,
         }
         return ResultsGroup(lookup=lookup)
@@ -589,14 +594,19 @@ class InterRDF_s(AnalysisBase):
     @classmethod
     @property
     def available_backends(cls):
-        return ('local', 'multiprocessing', 'dask', 'dask.distributed')
+        return ('serial', 'multiprocessing', 'dask')
+
+    @classmethod
+    @property
+    def _is_parallelizable(cls):
+        return True
 
     def _get_aggregator(self):
         lookup = {
-            'count': ResultsGroup.ndarray_sum,
-            'edges': ResultsGroup.select_first,
-            'bins': ResultsGroup.select_first,
-            'volume_cum': ResultsGroup.float_sum,
+            'count': ResultsGroup.flatten_sequence,
+            'edges': lambda arr: arr[0],
+            'bins': lambda arr: arr[0],
+            'volume_cum': lambda arr: np.sum(arr, axis=0),
             'rdf': ResultsGroup.ndarray_sum,
         }
         return ResultsGroup(lookup=lookup)

@@ -14,7 +14,6 @@ from MDAnalysisTests.analysis.test_base import (
 from MDAnalysis.analysis.rms import RMSD, RMSF
 from MDAnalysis.analysis.rdf import InterRDF, InterRDF_s
 
-from MDAnalysis.analysis.parallel import BackendDaskDistributed
 from MDAnalysis.lib.util import is_installed
 
 
