@@ -126,22 +126,14 @@ import itertools
 import logging
 import warnings
 from functools import partial
-from typing import Callable, Iterable, Sequence
+from typing import Callable, Iterable, Sequence, Union
 
 import numpy as np
 from MDAnalysis import coordinates
 from MDAnalysis.core.groups import AtomGroup
 from MDAnalysis.lib.log import ProgressBar
 
-from .parallel import (
-    ParallelExecutor,
-    Results,
-    ResultsGroup,
-    BackendDask,
-    BackendDaskDistributed,
-    BackendMultiprocessing,
-    BackendSerial,
-)
+from .parallel import Results, ResultsGroup, BackendDask, BackendMultiprocessing, BackendSerial, BackendBase
 
 logger = logging.getLogger(__name__)
 
@@ -236,12 +228,47 @@ class AnalysisBase(object):
     .. versionchanged:: 2.0.0
         Added :attr:`results`
 
+    .. versionadded:: 2.7.0
+        Added ability to run analysis in parallel using either a built-in backend (`multiprocessing` or `dask`)
+        of a custom `parallel.BackendBase` instance with an implemented `apply` method that is used to run
+        the computations.
+
     """
 
     @classmethod
     @property
     def available_backends(cls):
-        return ("local",)
+        """Tuple with backends supported by the core library for a given class.
+        User can pass either one of these values as `backend=...` to :meth:`run()` method,
+        or a custom object that has `apply` method (see documentation for :meth:`run()`):
+         - 'serial': no parallelization
+         - 'multiprocessing': parallelization using `multiprocessing.Pool`
+         - 'dask': parallelization using `dask.delayed.compute()`. Requires installation of `mdanalysis[parallel]`
+
+        If you want to add your own backend to an existing class, either pass a `parallel.BackendBase` subclass
+        (see its documentation to learn how to implement it properly).
+
+        Returns
+        -------
+        tuple
+            names of built-in backends that can be used in :meth:`.run(backend=...)`
+        """
+        return ("serial",)
+
+    @classmethod
+    @property
+    def _is_parallelizable(cls):
+        """Boolean mark showing that a given class can be parallelizable with split-apply-combine procedure.
+        Namely, if we can safely distribute :meth:`_single_frame` to multiple workers and then combine them
+        with a proper :meth:`_conclude` call.
+        If set to `False`, no backends except for `serial` are supported.
+
+        Returns
+        -------
+        bool
+            if a given `AnalysisBase` subclass is parallelizable with split-apply-combine, or not
+        """
+        return False
 
     def __init__(self, trajectory, verbose=False, **kwargs):
         self._trajectory = trajectory
@@ -262,11 +289,12 @@ class AnalysisBase(object):
             stop frame of analysis
         step : int, optional
             number of frames to skip between each analysed frame
+
+        .. versionadded:: 2.2.0
         frames : array_like, optional
             array of integers or booleans to slice trajectory; cannot be
             combined with `start`, `stop`, `step`
 
-            .. versionadded:: 2.2.0
 
         Raises
         ------
@@ -281,12 +309,11 @@ class AnalysisBase(object):
         .. versionchanged:: 2.2.0
             Added ability to iterate through trajectory by passing a list of
             frame indices in the `frames` keyword argument
-
         """
         self._trajectory = trajectory
         if frames is not None:
             if not all(opt is None for opt in [start, stop, step]):
-                raise ValueError("start/stop/step cannot be combined with " "frames")
+                raise ValueError("start/stop/step cannot be combined with frames")
             slicer = frames
         else:
             start, stop, step = trajectory.check_slice_indices(start, stop, step)
@@ -335,14 +362,7 @@ class AnalysisBase(object):
             ProgressBar keywords with custom parameters regarding progress bar position, etc;
             see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
 
-
-        .. versionchanged:: 2.2.0
-            Added ability to analyze arbitrary frames by passing a list of
-            frame indices in the `frames` keyword argument.
-
-        .. versionchanged:: 2.5.0
-            Add `progressbar_kwargs` parameter,
-            allowing to modify description, position etc of tqdm progressbars
+        .. versionadded:: 2.7.0
         """
         logger.info("Choosing frames to analyze")
         # if verbose unchanged, use class default
@@ -402,6 +422,8 @@ class AnalysisBase(object):
         -------
         computation_groups : list[np.ndarray]
             list of (n, 2) shaped np.ndarrays with frame indices and numbers
+
+        .. versionadded:: 2.7.0
         """
         if frames is None:
             start, stop, step = self._trajectory.check_slice_indices(start, stop, step)
@@ -420,38 +442,67 @@ class AnalysisBase(object):
 
         return np.array_split(enumerated_frames, n_parts)
 
-    def _configure_backend(self, backend: str, n_workers: int):
-        """
-        Configure parameters necessary for running a distributed workload.
+    def _configure_backend(self, backend: Union[str, BackendBase], n_workers: int, unsafe: bool = False):
+        """Matches a passed backend string value with class attributes :meth:`_is_parallelizable` and :meth:`available_backends`
+        to check if downstream calculations can be performed.
 
         Parameters
         ----------
-        backend : str, optional
-            scheduling type:
-              - 'dask' implies `dask` scheduler (need to install MDAnalysis[dask] for that to work)
-              - 'multiprocessing' works with standard python multiprocessing module
-              - None if you want to run things locally
-        n_workers : int, optional
-            number of workers (local or remote processes).
+        backend : Union[str, BackendBase]
+            backend to be used:
+               - `str` is matched to a builtin backend (one of `serial`, `multiprocessing` and `dask`)
+               - `BackendBase` subclass is checked for the presence of `apply` method
+        n_workers : int
+            positive integer with number of workers (processes, in case of built-in backends) to split the work between
+        unsafe : bool, optional
+            if you want to run your custom backend on a parallelizable class that has not been tested by developers, by default False
+
+        Returns
+        -------
+        BackendBase
+            instance of a `BackendBase` class that will be used for computations
 
         Raises
         ------
         ValueError
-            if backend is not available for current class
+            if :meth:`_is_parallelizable` is set to `False` but backend is not `serial`
+        ValueError
+            if `_is_parallelizable` and you're using custom backend instance without specifying `unsafe=True`
+        ValueError
+            if your trajectory has associated parallelizable transformations but backend is not serial
+        ValueError
+            if your backend object instance doesn't have an `apply` method
 
-        Returns
-        -------
-        client : ParallelExecutor
-            a ParallelExecutor instance, configured with given parameters
+        .. versionadded:: 2.7.0
         """
-        builtin_backends = {'local': BackendSerial, 'multiprocessing': BackendMultiprocessing, 'dask': BackendDask}
+        builtin_backends = {"serial": BackendSerial, "multiprocessing": BackendMultiprocessing, "dask": BackendDask}
 
-        backend_class = builtin_backends.get(backend, None)
-        if backend_class is not None:
+        backend_class = builtin_backends.get(backend, backend)
+        available_backend_classes = [builtin_backends.get(b) for b in self.available_backends]
+
+        # check for serial-only classes
+        if not self._is_parallelizable and backend_class is not BackendSerial:
+            raise ValueError(f"Can not parallelize class {self.__class__}")
+
+        # make sure user enabled 'unsafe=True' for custom classes
+        if not unsafe and self._is_parallelizable and backend_class not in available_backend_classes:
+            raise ValueError(
+                f"Must specify 'unsafe=True' if you want to use a custom {backend_class=} for {self.__class__}"
+            )
+
+        # check for the presence of parallelizable transformations
+        if backend_class is not BackendSerial and any((t.parallelizable for t in self._trajectory.transformations)):
+            raise ValueError("Trajectory should not have associated parallelizable transformations")
+
+        # conclude mapping from string to backend class if it's a builtin backend
+        if isinstance(backend, str):
             return backend_class(n_workers=n_workers)
 
-        if not hasattr(backend, 'apply'):
-            raise ValueError("{backend=} is invalid: should have 'apply' method")
+        # or pass along an instance of the class itself after ensuring it has apply method
+        if not isinstance(backend, BackendBase) or not hasattr(backend, "apply"):
+            raise ValueError(
+                f"{backend=} is invalid: should have 'apply' method and be instance of MDAnalysis.analysis.parallel.BackendBase"
+            )
         return backend
 
     def run(
@@ -463,8 +514,9 @@ class AnalysisBase(object):
         verbose: bool = None,
         n_workers: int = None,
         n_parts: int = None,
-        backend: str = None,
+        backend: Union[str, BackendBase] = None,
         *,
+        unsafe: bool = False,
         progressbar_kwargs={},
     ):
         """Perform the calculation
@@ -487,23 +539,23 @@ class AnalysisBase(object):
         verbose : bool, optional
             Turn on verbosity
 
+        .. versionadded:: 2.5.0
         progressbar_kwargs : dict, optional
             ProgressBar keywords with custom parameters regarding progress bar position, etc;
             see :class:`MDAnalysis.lib.log.ProgressBar` for full list.
-            Available only for `backend='local'`
-
-        backend : str, optional
-            Enables parallel execution of :meth:`AnalysisBase.run`. To list all available backends for your class,
-            check `self.available_backends` attribute.
-        n_workers : int, optional
-            number of workers to split work across.
+            Available only for `backend='serial'`
+        backend : Union[str, BackendBase], optional
+            By default, performs calculations in a serial fashion.
+            Otherwise, user can choose a backend:
+               - `str` is matched to a builtin backend (one of `serial`, `multiprocessing` and `dask`)
+               - `BackendBase` subclass is checked for the presence of `apply` method
+        n_workers : int
+            positive integer with number of workers (processes, in case of built-in backends) to split the work between
         n_parts : int, optional
             number of parts to split computations across. Can be more than number of workers,
             especially if you want to get a progressbar with `dask.distributed` backend.
-        client : dask.distributed.Client, optional
-            if running 'dask.distributed' backend, you must pre-configure a Client object, and then pass it
-            as an argument to execute `run()` method on this Client. Note that in this case, `n_workers`
-            will be ignored -- all workers from Client object will be used.
+        unsafe : bool, optional
+            if you want to run your custom backend on a parallelizable class that has not been tested by developers, by default False
 
         .. versionchanged:: 2.2.0
             Added ability to analyze arbitrary frames by passing a list of
@@ -513,11 +565,11 @@ class AnalysisBase(object):
             Add `progressbar_kwargs` parameter,
             allowing to modify description, position etc of tqdm progressbars
         """
-        # default to local execution
-        backend = 'local' if backend is None else backend
+        # default to serial execution
+        backend = "serial" if backend is None else backend
 
-        if progressbar_kwargs and backend != 'local':
-            raise ValueError("Can not display progressbar with non-local backend")
+        if progressbar_kwargs and backend != "serial":
+            raise ValueError("Can not display progressbar with non-serial backend")
 
         n_workers = 1 if n_workers is None else n_workers
 
@@ -525,9 +577,11 @@ class AnalysisBase(object):
         n_parts = n_workers if n_parts is None else n_parts
 
         # do this as early as possible to check client parameters before any computations occur
-        executor = self._configure_backend(backend=backend, n_workers=n_workers)
-        if hasattr(executor, 'n_workers') and n_parts < executor.n_workers:  # using executor's value here for non-default executors
-            warnings.warn('likely running not at full capacity: {executor.n_workers=} is greater than {n_parts=}')
+        executor = self._configure_backend(backend=backend, n_workers=n_workers, unsafe=unsafe)
+        if (
+            hasattr(executor, "n_workers") and n_parts < executor.n_workers
+        ):  # using executor's value here for non-default executors
+            warnings.warn(f"likely running not at full capacity: {executor.n_workers=} is greater than {n_parts=}")
 
         # start preparing the run
         worker_func = partial(self._compute, progressbar_kwargs=progressbar_kwargs, verbose=verbose)
@@ -551,12 +605,15 @@ class AnalysisBase(object):
         return self
 
     def _get_aggregator(self):
-        """Returns a default aggregator that takes entire results if there is a single object, and raises ValueError otherwise
+        """Returns a default aggregator that takes entire results if there is a single object, 
+        and raises ValueError otherwise
 
         Returns
         -------
         ResultsGroup
             aggregating object
+
+        .. versionadded:: 2.7.0
         """
         return ResultsGroup(lookup=None)
 
@@ -615,12 +672,16 @@ class AnalysisFromFunction(AnalysisBase):
     @classmethod
     @property
     def available_backends(cls):
-        # multiprocessing won't work because of pickling problems
-        return ("local", "dask", "dask.distributed")
+        # multiprocessing won't work because self.function won't get pickled
+        return ("serial", "dask")
+
+    @classmethod
+    @property
+    def _is_parallelizable(cls):
+        return True
 
     def __init__(self, function, trajectory=None, *args, **kwargs):
-        if (trajectory is not None) and (not isinstance(
-                trajectory, coordinates.base.ProtoReader)):
+        if (trajectory is not None) and (not isinstance(trajectory, coordinates.base.ProtoReader)):
             args = (trajectory,) + args
             trajectory = None
 
@@ -645,7 +706,7 @@ class AnalysisFromFunction(AnalysisBase):
         self.results.timeseries = []
 
     def _get_aggregator(self):
-        return ResultsGroup({'timeseries': ResultsGroup.flatten_sequence})
+        return ResultsGroup({"timeseries": ResultsGroup.flatten_sequence})
 
     def _single_frame(self):
         self.results.timeseries.append(self.function(*self.args, **self.kwargs))
@@ -709,8 +770,7 @@ def analysis_class(function):
 
     class WrapperClass(AnalysisFromFunction):
         def __init__(self, trajectory=None, *args, **kwargs):
-            super(WrapperClass, self).__init__(function, trajectory,
-                                               *args, **kwargs)
+            super(WrapperClass, self).__init__(function, trajectory, *args, **kwargs)
 
     return WrapperClass
 
@@ -748,9 +808,7 @@ def _filter_baseanalysis_kwargs(function, kwargs):
         base_argspec = inspect.getargspec(AnalysisBase.__init__)
 
     n_base_defaults = len(base_argspec.defaults)
-    base_kwargs = {name: val
-                   for name, val in zip(base_argspec.args[-n_base_defaults:],
-                                        base_argspec.defaults)}
+    base_kwargs = {name: val for name, val in zip(base_argspec.args[-n_base_defaults:], base_argspec.defaults)}
 
     try:
         # pylint: disable=deprecated-method
@@ -763,7 +821,8 @@ def _filter_baseanalysis_kwargs(function, kwargs):
         if base_kw in argspec.args:
             raise ValueError(
                 "argument name '{}' clashes with AnalysisBase argument."
-                "Now allowed are: {}".format(base_kw, base_kwargs.keys()))
+                "Now allowed are: {}".format(base_kw, base_kwargs.keys())
+            )
 
     base_args = {}
     for argname, default in base_kwargs.items():

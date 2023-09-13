@@ -364,7 +364,12 @@ class RMSD(AnalysisBase):
     @classmethod
     @property
     def available_backends(cls):
-        return ('local', 'multiprocessing', 'dask', 'dask.distributed')
+        return ('serial', 'multiprocessing', 'dask',)
+
+    @classmethod
+    @property
+    def _is_parallelizable(cls):
+        return True
 
     def __init__(self, atomgroup, reference=None, select='all',
                  groupselections=None, weights=None, weights_groupselections=False,
@@ -752,8 +757,8 @@ class RMSF(AnalysisBase):
     @classmethod
     @property
     def available_backends(cls):
-        return ('local',)
-    
+        return ('serial',)
+
     def __init__(self, atomgroup, **kwargs):
         r"""Parameters
         ----------
@@ -897,7 +902,6 @@ class RMSF(AnalysisBase):
         if not (self.results.rmsf >= 0).all():
             raise ValueError("Some RMSF values negative; overflow " +
                              "or underflow occurred")
-    
     @property
     def rmsf(self):
         wmsg = ("The `rmsf` attribute was deprecated in MDAnalysis 2.0.0 and "

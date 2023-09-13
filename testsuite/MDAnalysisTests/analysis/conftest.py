@@ -18,43 +18,6 @@ from MDAnalysis.analysis.parallel import BackendDaskDistributed
 from MDAnalysis.lib.util import is_installed
 
 
-@pytest.fixture(scope="module")
-def dask_client_1():
-    if not is_installed("dask"):
-        yield "NoClient"
-    else:
-        import dask
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-            lc = dask.distributed.LocalCluster(
-                n_workers=1, processes=True, threads_per_worker=1, dashboard_address=None
-            )
-            client = dask.distributed.Client(lc)
-            yield client
-            lc.close()
-            client.close()
-
-
-@pytest.fixture(scope="module")
-def dask_client_2():
-    if not is_installed("dask"):
-        yield "NoClient"
-    else:
-        import dask
-
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", UserWarning)
-
-            lc = dask.distributed.LocalCluster(
-                n_workers=1, processes=True, threads_per_worker=1, dashboard_address=None
-            )
-            client = dask.distributed.Client(lc)
-            yield client
-            lc.close()
-            client.close()
-
-
 def generate_client_fixture(cls):
     possible_backends = cls.available_backends
     installed_backends = [b for b in possible_backends if is_installed(b)]
@@ -65,18 +28,12 @@ def generate_client_fixture(cls):
         )
         for backend in installed_backends
         for nproc in (1, 2)
-        if backend not in ("dask.distributed", "local")
+        if backend != "serial"
     ]
-    params.extend([{"backend": "local"}, {"backend": "local", "n_workers": 1}])
-    if is_installed("dask.distributed") and "dask.distributed" in possible_backends:
-        params.extend(["dask_client_1", "dask_client_2"])
+    params.extend([{"backend": "serial"}])
 
     @pytest.fixture(scope="module", params=params)
-    def generated_fixture(request, dask_client_1, dask_client_2):
-        if request.param == "dask_client_1":
-            request.param = {"backend": BackendDaskDistributed(client=dask_client_1)}
-        elif request.param == "dask_client_2":
-            request.param = {"backend": BackendDaskDistributed(client=dask_client_2)}
+    def generated_fixture(request):
         return request.param
 
     return generated_fixture
