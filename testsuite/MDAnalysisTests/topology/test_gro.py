@@ -40,8 +40,8 @@ from numpy.testing import assert_equal
 class TestGROParser(ParserBase):
     parser = mda.topology.GROParser.GROParser
     ref_filename = GRO
-    expected_attrs = ['ids', 'names', 'resids', 'resnames', 'masses']
-    guessed_attrs = ['masses', 'types']
+    expected_attrs = ["ids", "names", "resids", "resnames", "masses"]
+    guessed_attrs = ["masses", "types"]
     expected_n_atoms = 47681
     expected_n_residues = 11302
     expected_n_segments = 1
@@ -55,6 +55,7 @@ class TestGROParser(ParserBase):
 
 class TestGROWideBox(object):
     """Tests for Issue #548"""
+
     def test_atoms(self):
         parser = mda.topology.GROParser.GROParser
         with parser(two_water_gro_widebox) as p:
@@ -75,19 +76,21 @@ def test_parse_missing_atomname_IOerror():
         with pytest.raises(IOError):
             p.parse()
 
+
 class TestGroResidWrapping(object):
     # resid is 5 digit field, so is limited to 100k
     # check that parser recognises when resids have wrapped
-    names = ['MET', 'ARG', 'ILE', 'ILE', 'LEU', 'LEU', 'GLY']
+    names = ["MET", "ARG", "ILE", "ILE", "LEU", "LEU", "GLY"]
     lengths = [19, 24, 19, 19, 19, 19, 7]
     parser = mda.topology.GROParser.GROParser
 
-    @pytest.mark.parametrize('parser, resids', (
-        (GRO_residwrap, [1, 99999, 100000, 100001, 199999, 200000, 200001]),
-        (GRO_residwrap_0base, [0, 99999, 100000, 100001, 199999, 200000,
-                               200001])
-
-    ))
+    @pytest.mark.parametrize(
+        "parser, resids",
+        (
+            (GRO_residwrap, [1, 99999, 100000, 100001, 199999, 200000, 200001]),
+            (GRO_residwrap_0base, [0, 99999, 100000, 100001, 199999, 200000, 200001]),
+        ),
+    )
     def test_wrapping_resids(self, parser, resids):
         with self.parser(parser) as p:
             top = p.parse()
@@ -105,7 +108,7 @@ def test_sameresid_diffresname():
     with parser(GRO_sameresid_diffresname) as p:
         top = p.parse()
     resids = [9, 9]
-    resnames = ['GLN', 'POPC']
+    resnames = ["GLN", "POPC"]
     for i, (resid, resname) in enumerate(zip(resids, resnames)):
         assert top.resids.values[i] == resid
         assert top.resnames.values[i] == resname

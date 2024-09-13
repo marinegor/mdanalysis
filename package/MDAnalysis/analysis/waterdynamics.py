@@ -39,18 +39,14 @@ See Also
 --------
 :mod:`waterdynamics.waterdynamics`
 """
+
 import warnings
 
-from waterdynamics.waterdynamics import (
-    WaterOrientationalRelaxation,
-    AngularDistribution,
-    MeanSquareDisplacement,
-    SurvivalProbability,
+
+wmsg = (
+    "Deprecation in version 2.8.0\n"
+    "MDAnalysis.analysis.waterdynamics is deprecated in favour of the "
+    "MDAKit waterdynamics (https://www.mdanalysis.org/waterdynamics/) "
+    "and will be removed in MDAnalysis version 3.0.0"
 )
-
-
-wmsg = ("Deprecation in version 2.8.0\n"
-        "MDAnalysis.analysis.waterdynamics is deprecated in favour of the "
-        "MDAKit waterdynamics (https://www.mdanalysis.org/waterdynamics/) "
-        "and will be removed in MDAnalysis version 3.0.0")
 warnings.warn(wmsg, category=DeprecationWarning)

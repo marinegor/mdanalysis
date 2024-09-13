@@ -79,6 +79,7 @@ Helper functions
 .. autofunction:: check_chemfiles_version
 
 """
+
 import numpy as np
 import warnings
 from packaging.version import Version
@@ -278,7 +279,7 @@ class ChemfilesWriter(base.WriterBase):
         mode="w",
         chemfiles_format="",
         topology=None,
-        **kwargs
+        **kwargs,
     ):
         """
         Parameters

@@ -27,6 +27,7 @@ Transformations Base Class --- :mod:`MDAnalysis.transformations.base`
 .. autoclass:: TransformationBase
 
 """
+
 from threadpoolctl import threadpool_limits
 
 
@@ -104,8 +105,8 @@ class TransformationBase(object):
            analysis approach.
            Default is ``True``.
         """
-        self.max_threads = kwargs.pop('max_threads', None)
-        self.parallelizable = kwargs.pop('parallelizable', True)
+        self.max_threads = kwargs.pop("max_threads", None)
+        self.parallelizable = kwargs.pop("parallelizable", True)
 
     def __call__(self, ts):
         """The function that makes transformation can be called as a function

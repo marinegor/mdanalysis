@@ -19,12 +19,19 @@ coordinates/core (all others).  They are declared here to avoid
 circular imports.
 
 """
+
 import copy
 import inspect
 
-from .. import (_READERS, _READER_HINTS,
-                _PARSERS, _PARSER_HINTS,
-                _MULTIFRAME_WRITERS, _SINGLEFRAME_WRITERS, _CONVERTERS)
+from .. import (
+    _READERS,
+    _READER_HINTS,
+    _PARSERS,
+    _PARSER_HINTS,
+    _MULTIFRAME_WRITERS,
+    _SINGLEFRAME_WRITERS,
+    _CONVERTERS,
+)
 from ..lib import util
 
 
@@ -80,8 +87,8 @@ def get_reader_for(filename, format=None):
         return format
 
     # ChainReader gets returned even if format is specified
-    if _READER_HINTS['CHAIN'](filename):
-        format = 'CHAIN'
+    if _READER_HINTS["CHAIN"](filename):
+        format = "CHAIN"
     # Only guess if format is not specified
     if format is None:
         for fmt_name, test in _READER_HINTS.items():
@@ -103,7 +110,9 @@ def get_reader_for(filename, format=None):
             "           Use the format keyword to explicitly set the format: 'Universe(...,format=FORMAT)'\n"
             "           For missing formats, raise an issue at "
             "https://github.com/MDAnalysis/mdanalysis/issues".format(
-                format, filename, _READERS.keys()))
+                format, filename, _READERS.keys()
+            )
+        )
         raise ValueError(errmsg) from None
 
 
@@ -158,7 +167,7 @@ def get_writer_for(filename, format=None, multiframe=None):
        The `filename` argument has been made mandatory.
     """
     if filename is None:
-        format = 'NULL'
+        format = "NULL"
     elif format is None:
         try:
             root, ext = util.get_ext(filename)
@@ -172,12 +181,14 @@ def get_writer_for(filename, format=None, multiframe=None):
         else:
             format = util.check_compressed_format(root, ext)
 
-    if format == '':
-        raise ValueError((
-            'File format could not be guessed from {}, '
-            'resulting in empty string - '
-            'only None or valid formats are supported.'
-            ).format(filename))
+    if format == "":
+        raise ValueError(
+            (
+                "File format could not be guessed from {}, "
+                "resulting in empty string - "
+                "only None or valid formats are supported."
+            ).format(filename)
+        )
 
     format = format.upper()
     if multiframe is None:
@@ -192,9 +203,11 @@ def get_writer_for(filename, format=None, multiframe=None):
         options = _SINGLEFRAME_WRITERS
         errmsg = "No single frame writer for format '{0}'"
     else:
-        raise ValueError("Unknown value '{0}' for multiframe,"
-                         " only True, False, None allowed"
-                         "".format(multiframe))
+        raise ValueError(
+            "Unknown value '{0}' for multiframe,"
+            " only True, False, None allowed"
+            "".format(multiframe)
+        )
 
     try:
         return options[format]
@@ -252,10 +265,13 @@ def get_parser_for(filename, format=None):
                 "   See https://docs.mdanalysis.org/documentation_pages/topology/init.html#supported-topology-formats\n"
                 "   For missing formats, raise an issue at \n"
                 "   https://github.com/MDAnalysis/mdanalysis/issues".format(
-                    format, _PARSERS.keys()))
+                    format, _PARSERS.keys()
+                )
+            )
             raise ValueError(errmsg) from None
         else:
-            return _PARSERS['MINIMAL']
+            return _PARSERS["MINIMAL"]
+
 
 def get_converter_for(format):
     """Return the appropriate topology converter for ``format``.
@@ -276,6 +292,6 @@ def get_converter_for(format):
     try:
         writer = _CONVERTERS[format]
     except KeyError:
-        errmsg = f'No converter found for {format} format'
+        errmsg = f"No converter found for {format} format"
         raise TypeError(errmsg) from None
     return writer

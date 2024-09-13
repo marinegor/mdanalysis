@@ -27,8 +27,20 @@
 ================================================================
 """
 
-__all__ = ['log', 'transformations', 'util', 'mdamath', 'distances',
-           'NeighborSearch', 'formats', 'pkdtree', 'nsgrid']
+__all__ = [
+    "log",
+    "transformations",
+    "util",
+    "mdamath",
+    "distances",
+    "NeighborSearch",
+    "formats",
+    "pkdtree",
+    "nsgrid",
+    "BufferIOPicklable",
+    "FileIOPicklable",
+    "TextIOPicklable",
+]
 
 from . import log
 from . import transformations
@@ -39,6 +51,4 @@ from . import NeighborSearch
 from . import formats
 from . import pkdtree
 from . import nsgrid
-from .picklable_file_io import (FileIOPicklable,
-                                BufferIOPicklable,
-                                TextIOPicklable)
+from .picklable_file_io import FileIOPicklable, BufferIOPicklable, TextIOPicklable

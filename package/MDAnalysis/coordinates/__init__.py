@@ -757,7 +757,42 @@ Methods
    raw :class:`~MDAnalysis.coordinates.Timestep` objects.
 
 """
-__all__ = ['reader', 'writer', 'timestep']
+
+__all__ = [
+    "reader",
+    "writer",
+    "timestep",
+    "base",
+    "chain",
+    "chemfiles",
+    "CRD",
+    "DCD",
+    "DLPoly",
+    "DMS",
+    "GMS",
+    "GRO",
+    "INPCRD",
+    "LAMMPS",
+    "MOL2",
+    "PDB",
+    "PDBQT",
+    "PQR",
+    "TRC",
+    "TRJ",
+    "TRR",
+    "H5MD",
+    "TRZ",
+    "XTC",
+    "XYZ",
+    "TXYZ",
+    "memory",
+    "MMTF",
+    "GSD",
+    "null",
+    "NAMDBIN",
+    "FHIAIMS",
+    "TNG",
+]
 
 from . import base
 from . import timestep

@@ -37,6 +37,7 @@ Classes
    :members:
 
 """
+
 from . import base
 
 
@@ -47,9 +48,10 @@ class NullWriter(base.WriterBase):
     a Writer but ignores all input. It can be used in order to
     suppress output.
     """
-    format = 'NULL'
+
+    format = "NULL"
     multiframe = True
-    units = {'time': 'ps', 'length': 'Angstrom'}
+    units = {"time": "ps", "length": "Angstrom"}
 
     def __init__(self, filename, **kwargs):
         pass

@@ -45,6 +45,7 @@ Classes
    :inherited-members:
 
 """
+
 import re
 import numpy as np
 
@@ -63,10 +64,11 @@ from ..core.topologyattrs import (
     AtomAttr,
 )
 
+
 class AtomicCharges(AtomAttr):
-    attrname = 'atomiccharges'
-    singular = 'atomiccharge'
-    per_object = 'atom'
+    attrname = "atomiccharges"
+    singular = "atomiccharge"
+    per_object = "atom"
 
 
 class GMSParser(TopologyReaderBase):
@@ -81,7 +83,8 @@ class GMSParser(TopologyReaderBase):
 
     .. versionadded:: 0.9.1
     """
-    format = 'GMS'
+
+    format = "GMS"
 
     def parse(self, **kwargs):
         """Read list of atoms from a GAMESS file."""
@@ -93,16 +96,16 @@ class GMSParser(TopologyReaderBase):
                 line = inf.readline()
                 if not line:
                     raise EOFError
-                if re.match(r'^\s+ATOM\s+ATOMIC\s+COORDINATES\s*\(BOHR\).*',\
-                        line):
+                if re.match(r"^\s+ATOM\s+ATOMIC\s+COORDINATES\s*\(BOHR\).*", line):
                     break
-            line = inf.readline() # skip
+            line = inf.readline()  # skip
 
             while True:
                 line = inf.readline()
-                _m = re.match(\
-r'^\s*([A-Za-z_][A-Za-z_0-9]*)\s+([0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+).*',
-                        line)
+                _m = re.match(
+                    r"^\s*([A-Za-z_][A-Za-z_0-9]*)\s+([0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+).*",
+                    line,
+                )
                 if _m is None:
                     break
                 name = _m.group(1)
@@ -110,7 +113,7 @@ r'^\s*([A-Za-z_][A-Za-z_0-9]*)\s+([0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+)\s+(\-?[0
 
                 names.append(name)
                 at_charges.append(at_charge)
-                #TODO: may be use coordinates info from _m.group(3-5) ??
+                # TODO: may be use coordinates info from _m.group(3-5) ??
 
         atomtypes = guessers.guess_types(names)
         masses = guessers.guess_masses(atomtypes)
@@ -123,9 +126,8 @@ r'^\s*([A-Za-z_][A-Za-z_0-9]*)\s+([0-9]+\.[0-9]+)\s+(\-?[0-9]+\.[0-9]+)\s+(\-?[0
             Masses(masses, guessed=True),
             Resids(np.array([1])),
             Resnums(np.array([1])),
-            Segids(np.array(['SYSTEM'], dtype=object)),
+            Segids(np.array(["SYSTEM"], dtype=object)),
         ]
-        top = Topology(n_atoms, 1, 1,
-                       attrs=attrs)
+        top = Topology(n_atoms, 1, 1, attrs=attrs)
 
         return top

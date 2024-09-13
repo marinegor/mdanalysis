@@ -45,6 +45,7 @@ Classes
    :inherited-members:
 
 """
+
 import numpy as np
 
 from . import guessers
@@ -74,7 +75,8 @@ class FHIAIMSParser(TopologyReaderBase):
      - Masses
 
     """
-    format = ['IN', 'FHIAIMS']
+
+    format = ["IN", "FHIAIMS"]
 
     def parse(self, **kwargs):
         """Read the file and return the structure.
@@ -96,7 +98,10 @@ class FHIAIMSParser(TopologyReaderBase):
                     continue
                 # we are now seeing something that's neither atom nor lattice
                 raise ValueError(
-                    'Non-conforming line: ({0})in FHI-AIMS input file {0}'.format(line, self.filename))
+                    "Non-conforming line: ({0})in FHI-AIMS input file {0}".format(
+                        line,
+                    )
+                )
             names = np.asarray(names)
             natoms = len(names)
 
@@ -104,16 +109,17 @@ class FHIAIMSParser(TopologyReaderBase):
         atomtypes = guessers.guess_types(names)
         masses = guessers.guess_masses(names)
 
-        attrs = [Atomnames(names),
-                 Atomids(np.arange(natoms) + 1),
-                 Atomtypes(atomtypes, guessed=True),
-                 Masses(masses, guessed=True),
-                 Resids(np.array([1])),
-                 Resnums(np.array([1])),
-                 Segids(np.array(['SYSTEM'], dtype=object)),
-                 Elements(names)]
+        attrs = [
+            Atomnames(names),
+            Atomids(np.arange(natoms) + 1),
+            Atomtypes(atomtypes, guessed=True),
+            Masses(masses, guessed=True),
+            Resids(np.array([1])),
+            Resnums(np.array([1])),
+            Segids(np.array(["SYSTEM"], dtype=object)),
+            Elements(names),
+        ]
 
-        top = Topology(natoms, 1, 1,
-                       attrs=attrs)
+        top = Topology(natoms, 1, 1, attrs=attrs)
 
         return top

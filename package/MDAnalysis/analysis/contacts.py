@@ -208,10 +208,8 @@ Classes
 .. footbibliography::
 
 """
-import os
-import errno
+
 import warnings
-import bz2
 import functools
 
 import numpy as np
@@ -220,7 +218,6 @@ import logging
 
 import MDAnalysis
 import MDAnalysis.lib.distances
-from MDAnalysis.lib.util import openany
 from MDAnalysis.analysis.distances import distance_array
 from MDAnalysis.core.groups import AtomGroup, UpdatingAtomGroup
 from .base import AnalysisBase
@@ -260,7 +257,7 @@ def soft_cut_q(r, r0, beta=5.0, lambda_constant=1.8):
     """
     r = np.asarray(r)
     r0 = np.asarray(r0)
-    result = 1/(1 + np.exp(beta*(r - lambda_constant * r0)))
+    result = 1 / (1 + np.exp(beta * (r - lambda_constant * r0)))
 
     return result.sum() / len(r0)
 
@@ -378,8 +375,17 @@ class Contacts(AnalysisBase):
        :class:`Contacts` accepts both AtomGroup and string for `select`
     """
 
-    def __init__(self, u, select, refgroup, method="hard_cut", radius=4.5,
-                 pbc=True, kwargs=None, **basekwargs):
+    def __init__(
+        self,
+        u,
+        select,
+        refgroup,
+        method="hard_cut",
+        radius=4.5,
+        pbc=True,
+        kwargs=None,
+        **basekwargs,
+    ):
         """
         Parameters
         ----------
@@ -423,11 +429,11 @@ class Contacts(AnalysisBase):
 
         self.fraction_kwargs = kwargs if kwargs is not None else {}
 
-        if method == 'hard_cut':
+        if method == "hard_cut":
             self.fraction_contacts = hard_cut_q
-        elif method == 'soft_cut':
+        elif method == "soft_cut":
             self.fraction_contacts = soft_cut_q
-        elif method == 'radius_cut':
+        elif method == "radius_cut":
             self.fraction_contacts = functools.partial(radius_cut_q, radius=radius)
         else:
             if not callable(method):
@@ -439,12 +445,12 @@ class Contacts(AnalysisBase):
         self.grA, self.grB = (self._get_atomgroup(u, sel) for sel in select)
 
         self.pbc = pbc
-        
+
         # contacts formed in reference
         self.r0 = []
         self.initial_contacts = []
 
-        #get dimension of box if pbc set to True
+        # get dimension of box if pbc set to True
         if self.pbc:
             self._get_box = lambda ts: ts.dimensions
         else:
@@ -452,24 +458,31 @@ class Contacts(AnalysisBase):
 
         if isinstance(refgroup[0], AtomGroup):
             refA, refB = refgroup
-            self.r0.append(distance_array(refA.positions, refB.positions,
-                                            box=self._get_box(refA.universe)))
+            self.r0.append(
+                distance_array(
+                    refA.positions, refB.positions, box=self._get_box(refA.universe)
+                )
+            )
             self.initial_contacts.append(contact_matrix(self.r0[-1], radius))
 
         else:
             for refA, refB in refgroup:
-                self.r0.append(distance_array(refA.positions, refB.positions,
-                                                box=self._get_box(refA.universe)))
+                self.r0.append(
+                    distance_array(
+                        refA.positions, refB.positions, box=self._get_box(refA.universe)
+                    )
+                )
                 self.initial_contacts.append(contact_matrix(self.r0[-1], radius))
 
         self.n_initial_contacts = self.initial_contacts[0].sum()
 
-
     @staticmethod
     def _get_atomgroup(u, sel):
-        select_error_message = ("selection must be either string or a "
-                                "static AtomGroup. Updating AtomGroups "
-                                "are not supported.")
+        select_error_message = (
+            "selection must be either string or a "
+            "static AtomGroup. Updating AtomGroups "
+            "are not supported."
+        )
         if isinstance(sel, str):
             return u.select_atoms(sel)
         elif isinstance(sel, AtomGroup):
@@ -481,17 +494,19 @@ class Contacts(AnalysisBase):
             raise TypeError(select_error_message)
 
     def _prepare(self):
-        self.results.timeseries = np.empty((self.n_frames, len(self.r0)+1))
+        self.results.timeseries = np.empty((self.n_frames, len(self.r0) + 1))
 
     def _single_frame(self):
         self.results.timeseries[self._frame_index][0] = self._ts.frame
-        
+
         # compute distance array for a frame
-        d = distance_array(self.grA.positions, self.grB.positions,
-                            box=self._get_box(self._ts))
-        
-        for i, (initial_contacts, r0) in enumerate(zip(self.initial_contacts,
-                                                       self.r0), 1):
+        d = distance_array(
+            self.grA.positions, self.grB.positions, box=self._get_box(self._ts)
+        )
+
+        for i, (initial_contacts, r0) in enumerate(
+            zip(self.initial_contacts, self.r0), 1
+        ):
             # select only the contacts that were formed in the reference state
             r = d[initial_contacts]
             r0 = r0[initial_contacts]
@@ -500,9 +515,11 @@ class Contacts(AnalysisBase):
 
     @property
     def timeseries(self):
-        wmsg = ("The `timeseries` attribute was deprecated in MDAnalysis "
-                "2.0.0 and will be removed in MDAnalysis 3.0.0. Please use "
-                "`results.timeseries` instead")
+        wmsg = (
+            "The `timeseries` attribute was deprecated in MDAnalysis "
+            "2.0.0 and will be removed in MDAnalysis 3.0.0. Please use "
+            "`results.timeseries` instead"
+        )
         warnings.warn(wmsg, DeprecationWarning)
         return self.results.timeseries
 
@@ -514,7 +531,7 @@ def _new_selections(u_orig, selections, frame):
     return [u.select_atoms(s) for s in selections]
 
 
-def q1q2(u, select='all', radius=4.5):
+def q1q2(u, select="all", radius=4.5):
     """Perform a q1-q2 analysis.
 
     Compares native contacts between the starting structure and final structure
@@ -534,7 +551,7 @@ def q1q2(u, select='all', radius=4.5):
     contacts : :class:`Contacts`
         Contact Analysis that is set up for a q1-q2 analysis
 
-    
+
     .. versionchanged:: 1.0.0
        Changed `selection` keyword to `select`
        Support for setting ``start``, ``stop``, and ``step`` has been removed.
@@ -543,6 +560,10 @@ def q1q2(u, select='all', radius=4.5):
     selection = (select, select)
     first_frame_refs = _new_selections(u, selection, 0)
     last_frame_refs = _new_selections(u, selection, -1)
-    return Contacts(u, selection,
-                    (first_frame_refs, last_frame_refs),
-                    radius=radius, method='radius_cut')
+    return Contacts(
+        u,
+        selection,
+        (first_frame_refs, last_frame_refs),
+        radius=radius,
+        method="radius_cut",
+    )

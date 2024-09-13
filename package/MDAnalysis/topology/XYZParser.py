@@ -1,5 +1,5 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #
 # MDAnalysis --- https://www.mdanalysis.org
 # Copyright (c) 2006-2017 The MDAnalysis Development Team and contributors
@@ -38,6 +38,7 @@ Classes
    :members:
 
 """
+
 import numpy as np
 
 from . import guessers
@@ -71,7 +72,8 @@ class XYZParser(TopologyReaderBase):
     .. versionchanged: 1.0.0
        Store elements attribute, based on XYZ atom names
     """
-    format = 'XYZ'
+
+    format = "XYZ"
 
     def parse(self, **kwargs):
         """Read the file and return the structure.
@@ -95,16 +97,17 @@ class XYZParser(TopologyReaderBase):
         atomtypes = guessers.guess_types(names)
         masses = guessers.guess_masses(names)
 
-        attrs = [Atomnames(names),
-                 Atomids(np.arange(natoms) + 1),
-                 Atomtypes(atomtypes, guessed=True),
-                 Masses(masses, guessed=True),
-                 Resids(np.array([1])),
-                 Resnums(np.array([1])),
-                 Segids(np.array(['SYSTEM'], dtype=object)),
-                 Elements(names)]
+        attrs = [
+            Atomnames(names),
+            Atomids(np.arange(natoms) + 1),
+            Atomtypes(atomtypes, guessed=True),
+            Masses(masses, guessed=True),
+            Resids(np.array([1])),
+            Resnums(np.array([1])),
+            Segids(np.array(["SYSTEM"], dtype=object)),
+            Elements(names),
+        ]
 
-        top = Topology(natoms, 1, 1,
-                       attrs=attrs)
+        top = Topology(natoms, 1, 1, attrs=attrs)
 
         return top

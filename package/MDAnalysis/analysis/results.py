@@ -10,7 +10,7 @@ Classes
 -------
 
 The :class:`Results` class is an extension of a built-in dictionary
-type, that holds all assigned attributes in :attr:`self.data` and 
+type, that holds all assigned attributes in :attr:`self.data` and
 allows for access either via dict-like syntax, or via class-like syntax:
 
 .. code-block:: python
@@ -22,7 +22,7 @@ allows for access either via dict-like syntax, or via class-like syntax:
 
 
 The :class:`ResultsGroup` can merge multiple :class:`Results` objects.
-It is mainly used by :class:`MDAnalysis.analysis.base.AnalysisBase` class, 
+It is mainly used by :class:`MDAnalysis.analysis.base.AnalysisBase` class,
 that uses :meth:`ResultsGroup.merge()` method to aggregate results from
 multiple workers, initialized during a parallel run:
 
@@ -30,7 +30,7 @@ multiple workers, initialized during a parallel run:
 
     from MDAnalysis.analysis.results import Results, ResultsGroup
     import numpy as np
-    
+
     r1, r2 = Results(), Results()
     r1.masses = [1, 2, 3, 4, 5]
     r2.masses = [0, 0, 0, 0]
@@ -48,6 +48,7 @@ multiple workers, initialized during a parallel run:
     assert r.masses == list((*r1.masses, *r2.masses))
     assert (r.vectors == np.vstack([r1.vectors, r2.vectors])).all()
 """
+
 from collections import UserDict
 import numpy as np
 from typing import Callable, Sequence
@@ -107,7 +108,7 @@ class Results(UserDict):
     def __init__(self, *args, **kwargs):
         kwargs = dict(*args, **kwargs)
         if "data" in kwargs.keys():
-            raise AttributeError(f"'data' is a protected dictionary attribute")
+            raise AttributeError("'data' is a protected dictionary attribute")
         self.__dict__["data"] = {}
         self.update(kwargs)
 
@@ -166,7 +167,7 @@ class ResultsGroup:
         obj1 = Results(mass=1)
         obj2 = Results(mass=3)
         assert {'mass': 2.0} == group.merge([obj1, obj2])
-    
+
 
     .. code-block:: python
 
@@ -182,10 +183,12 @@ class ResultsGroup:
     def __init__(self, lookup: dict[str, Callable] = None):
         self._lookup = lookup
 
-    def merge(self, objects: Sequence[Results], require_all_aggregators: bool = True) -> Results:
-        """Merge multiple Results into a single Results instance. 
+    def merge(
+        self, objects: Sequence[Results], require_all_aggregators: bool = True
+    ) -> Results:
+        """Merge multiple Results into a single Results instance.
 
-        Merge multiple :class:`Results` instances into a single one, using the 
+        Merge multiple :class:`Results` instances into a single one, using the
         `lookup` dictionary to determine the appropriate aggregator functions for
         each named results attribute. If the resulting object only contains a single
         element, it just returns it without using any aggregators.
@@ -213,7 +216,7 @@ class ResultsGroup:
         if len(objects) == 1:
             merged_results = objects[0]
             return merged_results
-        
+
         merged_results = Results()
         for key in objects[0].keys():
             agg_function = self._lookup.get(key, None)

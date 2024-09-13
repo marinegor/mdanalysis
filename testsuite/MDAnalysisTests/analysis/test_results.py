@@ -92,7 +92,7 @@ class Test_Results:
         assert results.spudda == "fett"
 
     def test_update_data_fail(self, results):
-        msg = f"'data' is a protected dictionary attribute"
+        msg = "'data' is a protected dictionary attribute"
         with pytest.raises(AttributeError, match=msg):
             results.update({"data": 0})
 
@@ -170,4 +170,8 @@ class Test_ResultsGroup:
 
         results = merger.merge(objects)
         for attr, merged_value in results.items():
-            assert_equal(merged_value, answers.get(attr), err_msg=f"{attr=}, {merged_value=}, {arr=}, {objects=}")
+            assert_equal(
+                merged_value,
+                answers.get(attr),
+                err_msg=f"{attr=}, {merged_value=}, {arr=}, {objects=}",
+            )

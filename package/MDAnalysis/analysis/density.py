@@ -150,24 +150,16 @@ instance, which is derived from a :class:`gridData.core.Grid`. A
 .. _`gmx trjconv`: http://manual.gromacs.org/programs/gmx-trjconv.html
 
 """
+
 import numpy as np
-import sys
-import os
-import os.path
-import errno
 import warnings
 
 from gridData import Grid
 
-import MDAnalysis
-from MDAnalysis.core import groups
-from MDAnalysis.lib.util import (fixedwidth_bins, iterable, asiterable,
-                                 deprecate,)
-from MDAnalysis.lib import NeighborSearch as NS
-from MDAnalysis import NoDataError, MissingDataWarning
+from MDAnalysis.lib.util import (
+    fixedwidth_bins,
+)
 from .. import units
-from ..lib import distances
-from MDAnalysis.lib.log import ProgressBar
 
 from .base import AnalysisBase
 
@@ -398,10 +390,17 @@ class DensityAnalysis(AnalysisBase):
 
     """
 
-    def __init__(self, atomgroup, delta=1.0,
-                 metadata=None, padding=2.0,
-                 gridcenter=None,
-                 xdim=None, ydim=None, zdim=None):
+    def __init__(
+        self,
+        atomgroup,
+        delta=1.0,
+        metadata=None,
+        padding=2.0,
+        gridcenter=None,
+        xdim=None,
+        ydim=None,
+        zdim=None,
+    ):
         u = atomgroup.universe
         super(DensityAnalysis, self).__init__(u.trajectory)
         self._atomgroup = atomgroup
@@ -414,12 +413,13 @@ class DensityAnalysis(AnalysisBase):
 
     def _prepare(self):
         coord = self._atomgroup.positions
-        if (self._gridcenter is not None or
-                any([self._xdim, self._ydim, self._zdim])):
+        if self._gridcenter is not None or any([self._xdim, self._ydim, self._zdim]):
             # Issue 2372: padding is ignored, defaults to 2.0 therefore warn
             if self._padding > 0:
-                msg = (f"Box padding (currently set at {self._padding}) "
-                       f"is not used in user defined grids.")
+                msg = (
+                    f"Box padding (currently set at {self._padding}) "
+                    f"is not used in user defined grids."
+                )
                 warnings.warn(msg)
                 logger.warning(msg)
             # Generate a copy of smin/smax from coords to later check if the
@@ -427,19 +427,21 @@ class DensityAnalysis(AnalysisBase):
             try:
                 smin = np.min(coord, axis=0)
                 smax = np.max(coord, axis=0)
-            except ValueError as err:
-                msg = ("No atoms in AtomGroup at input time frame. "
-                       "This may be intended; please ensure that "
-                       "your grid selection covers the atomic "
-                       "positions you wish to capture.")
+            except ValueError:
+                msg = (
+                    "No atoms in AtomGroup at input time frame. "
+                    "This may be intended; please ensure that "
+                    "your grid selection covers the atomic "
+                    "positions you wish to capture."
+                )
                 warnings.warn(msg)
                 logger.warning(msg)
-                smin = self._gridcenter     #assigns limits to be later -
-                smax = self._gridcenter     #overwritten by _set_user_grid
+                smin = self._gridcenter  # assigns limits to be later -
+                smax = self._gridcenter  # overwritten by _set_user_grid
             # Overwrite smin/smax with user defined values
-            smin, smax = self._set_user_grid(self._gridcenter, self._xdim,
-                                             self._ydim, self._zdim, smin,
-                                             smax)
+            smin, smax = self._set_user_grid(
+                self._gridcenter, self._xdim, self._ydim, self._zdim, smin, smax
+            )
         else:
             # Make the box bigger to avoid as much as possible 'outlier'. This
             # is important if the sites are defined at a high density: in this
@@ -452,18 +454,21 @@ class DensityAnalysis(AnalysisBase):
                 smin = np.min(coord, axis=0) - self._padding
                 smax = np.max(coord, axis=0) + self._padding
             except ValueError as err:
-                errmsg = ("No atoms in AtomGroup at input time frame. "
-                          "Grid for density could not be automatically"
-                          " generated. If this is expected, a user"
-                          " defined grid will need to be "
-                          "provided instead.")
+                errmsg = (
+                    "No atoms in AtomGroup at input time frame. "
+                    "Grid for density could not be automatically"
+                    " generated. If this is expected, a user"
+                    " defined grid will need to be "
+                    "provided instead."
+                )
                 raise ValueError(errmsg) from err
         BINS = fixedwidth_bins(self._delta, smin, smax)
-        arange = np.transpose(np.vstack((BINS['min'], BINS['max'])))
-        bins = BINS['Nbins']
+        arange = np.transpose(np.vstack((BINS["min"], BINS["max"])))
+        bins = BINS["Nbins"]
         # create empty grid with the right dimensions (and get the edges)
-        grid, edges = np.histogramdd(np.zeros((1, 3)), bins=bins,
-                                     range=arange, density=False)
+        grid, edges = np.histogramdd(
+            np.zeros((1, 3)), bins=bins, range=arange, density=False
+        )
         grid *= 0.0
         self._grid = grid
         self._edges = edges
@@ -471,9 +476,12 @@ class DensityAnalysis(AnalysisBase):
         self._bins = bins
 
     def _single_frame(self):
-        h, _ = np.histogramdd(self._atomgroup.positions,
-                              bins=self._bins, range=self._arange,
-                              density=False)
+        h, _ = np.histogramdd(
+            self._atomgroup.positions,
+            bins=self._bins,
+            range=self._arange,
+            density=False,
+        )
         # reduce (proposed change #2542 to match the parallel version in pmda.density)
         # return self._reduce(self._grid, h)
         #
@@ -483,17 +491,22 @@ class DensityAnalysis(AnalysisBase):
     def _conclude(self):
         # average:
         self._grid /= float(self.n_frames)
-        density = Density(grid=self._grid, edges=self._edges,
-                          units={'length': "Angstrom"},
-                          parameters={'isDensity': False})
+        density = Density(
+            grid=self._grid,
+            edges=self._edges,
+            units={"length": "Angstrom"},
+            parameters={"isDensity": False},
+        )
         density.make_density()
         self.results.density = density
 
     @property
     def density(self):
-        wmsg = ("The `density` attribute was deprecated in MDAnalysis 2.0.0 "
-                "and will be removed in MDAnalysis 3.0.0. Please use "
-                "`results.density` instead")
+        wmsg = (
+            "The `density` attribute was deprecated in MDAnalysis 2.0.0 "
+            "and will be removed in MDAnalysis 3.0.0. Please use "
+            "`results.density` instead"
+        )
         warnings.warn(wmsg, DeprecationWarning)
         return self.results.density
 
@@ -530,10 +543,12 @@ class DensityAnalysis(AnalysisBase):
         """
         # Check user inputs
         if any(x is None for x in [gridcenter, xdim, ydim, zdim]):
-            errmsg = ("Gridcenter or grid dimensions are not provided")
+            errmsg = "Gridcenter or grid dimensions are not provided"
             raise ValueError(errmsg)
         try:
-            gridcenter = np.asarray(gridcenter, dtype=np.float32).reshape(3,)
+            gridcenter = np.asarray(gridcenter, dtype=np.float32).reshape(
+                3,
+            )
         except ValueError as err:
             raise ValueError("Gridcenter must be a 3D coordinate") from err
         try:
@@ -543,16 +558,17 @@ class DensityAnalysis(AnalysisBase):
         if any(np.isnan(gridcenter)) or any(np.isnan(xyzdim)):
             raise ValueError("Gridcenter or grid dimensions have NaN element")
 
-
         # Set min/max by shifting by half the edge length of each dimension
-        umin = gridcenter - xyzdim/2
-        umax = gridcenter + xyzdim/2
+        umin = gridcenter - xyzdim / 2
+        umax = gridcenter + xyzdim / 2
 
         # Here we test if coords of selection fall outside of the defined grid
         # if this happens, we warn users they may want to resize their grids
         if any(smin < umin) or any(smax > umax):
-            msg = ("Atom selection does not fit grid --- "
-                   "you may want to define a larger box")
+            msg = (
+                "Atom selection does not fit grid --- "
+                "you may want to define a larger box"
+            )
             warnings.warn(msg)
             logger.warning(msg)
         return umin, umax
@@ -711,22 +727,25 @@ class Density(Grid):
     """
 
     def __init__(self, *args, **kwargs):
-        length_unit = 'Angstrom'
+        length_unit = "Angstrom"
 
-        parameters = kwargs.pop('parameters', {})
-        if (len(args) > 0 and isinstance(args[0], str) or
-            isinstance(kwargs.get('grid', None), str)):
+        parameters = kwargs.pop("parameters", {})
+        if (
+            len(args) > 0
+            and isinstance(args[0], str)
+            or isinstance(kwargs.get("grid", None), str)
+        ):
             # try to be smart: when reading from a file then it is likely that
             # this is a density
-            parameters.setdefault('isDensity', True)
+            parameters.setdefault("isDensity", True)
         else:
-            parameters.setdefault('isDensity', False)
-        units = kwargs.pop('units', {})
-        units.setdefault('length', length_unit)
-        if parameters['isDensity']:
-            units.setdefault('density', length_unit)
+            parameters.setdefault("isDensity", False)
+        units = kwargs.pop("units", {})
+        units.setdefault("length", length_unit)
+        if parameters["isDensity"]:
+            units.setdefault("density", length_unit)
         else:
-            units.setdefault('density', None)
+            units.setdefault("density", None)
 
         super(Density, self).__init__(*args, **kwargs)
 
@@ -760,18 +779,17 @@ class Density(Grid):
                     units.conversion_factor[unit_type][value]
                     self.units[unit_type] = value
                 except KeyError:
-                    errmsg = (f"Unit {value} of type {unit_type} is not "
-                              f"recognized.")
+                    errmsg = f"Unit {value} of type {unit_type} is not " f"recognized."
                     raise ValueError(errmsg) from None
         except AttributeError:
             errmsg = '"unit" must be a dictionary with keys "length" and "density.'
             logger.fatal(errmsg)
             raise ValueError(errmsg) from None
         # need at least length and density (can be None)
-        if 'length' not in self.units:
+        if "length" not in self.units:
             raise ValueError('"unit" must contain a unit for "length".')
-        if 'density' not in self.units:
-            self.units['density'] = None
+        if "density" not in self.units:
+            self.units["density"] = None
 
     def make_density(self):
         """Convert the grid (a histogram, counts in a cell) to a density (counts/volume).
@@ -786,7 +804,7 @@ class Density(Grid):
         # Make it a density by dividing by the volume of each grid cell
         # (from numpy.histogramdd, which is for general n-D grids)
 
-        if self.parameters['isDensity']:
+        if self.parameters["isDensity"]:
             msg = "Running make_density() makes no sense: Grid is already a density. Nothing done."
             logger.warning(msg)
             warnings.warn(msg)
@@ -798,11 +816,11 @@ class Density(Grid):
             shape = np.ones(D, int)
             shape[i] = len(dedges[i])
             self.grid /= dedges[i].reshape(shape)
-        self.parameters['isDensity'] = True
+        self.parameters["isDensity"] = True
         # see units.densityUnit_factor for units
-        self.units['density'] = self.units['length'] + "^{-3}"
+        self.units["density"] = self.units["length"] + "^{-3}"
 
-    def convert_length(self, unit='Angstrom'):
+    def convert_length(self, unit="Angstrom"):
         """Convert Grid object to the new `unit`.
 
         Parameters
@@ -819,14 +837,14 @@ class Density(Grid):
         histogram and a length unit and use :meth:`make_density`.
 
         """
-        if unit == self.units['length']:
+        if unit == self.units["length"]:
             return
-        cvnfact = units.get_conversion_factor('length', self.units['length'], unit)
+        cvnfact = units.get_conversion_factor("length", self.units["length"], unit)
         self.edges = [x * cvnfact for x in self.edges]
-        self.units['length'] = unit
+        self.units["length"] = unit
         self._update()  # needed to recalculate midpoints and origin
 
-    def convert_density(self, unit='Angstrom'):
+    def convert_density(self, unit="Angstrom"):
         """Convert the density to the physical units given by `unit`.
 
         Parameters
@@ -865,24 +883,27 @@ class Density(Grid):
             and floating point artifacts for multiple conversions.
 
         """
-        if not self.parameters['isDensity']:
-            errmsg = 'The grid is not a density so convert_density() makes no sense.'
+        if not self.parameters["isDensity"]:
+            errmsg = "The grid is not a density so convert_density() makes no sense."
             logger.fatal(errmsg)
             raise RuntimeError(errmsg)
-        if unit == self.units['density']:
+        if unit == self.units["density"]:
             return
         try:
-            self.grid *= units.get_conversion_factor('density',
-                                                     self.units['density'], unit)
+            self.grid *= units.get_conversion_factor(
+                "density", self.units["density"], unit
+            )
         except KeyError:
-            errmsg = (f"The name of the unit ({unit} supplied) must be one "
-                      f"of:\n{units.conversion_factor['density'].keys()}")
+            errmsg = (
+                f"The name of the unit ({unit} supplied) must be one "
+                f"of:\n{units.conversion_factor['density'].keys()}"
+            )
             raise ValueError(errmsg) from None
-        self.units['density'] = unit
+        self.units["density"] = unit
 
     def __repr__(self):
-        if self.parameters['isDensity']:
-            grid_type = 'density'
+        if self.parameters["isDensity"]:
+            grid_type = "density"
         else:
-            grid_type = 'histogram'
-        return '<Density ' + grid_type + ' with ' + str(self.grid.shape) + ' bins>'
+            grid_type = "histogram"
+        return "<Density " + grid_type + " with " + str(self.grid.shape) + " bins>"

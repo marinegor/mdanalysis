@@ -125,11 +125,11 @@ So, a closure-style transformation can be roughly defined as follows:
     method instead of being written as a function/closure.
 """
 
-from .base import TransformationBase
-from .translate import translate, center_in_box
-from .rotate import rotateby
-from .positionaveraging import PositionAverager
-from .nojump import NoJump
-from .fit import fit_translation, fit_rot_trans
-from .wrap import wrap, unwrap
-from .boxdimensions import set_dimensions
+from .base import TransformationBase as TransformationBase
+from .translate import translate as translate, center_in_box as center_in_box
+from .rotate import rotateby as rotateby
+from .positionaveraging import PositionAverager as PositionAverager
+from .nojump import NoJump as NoJump
+from .fit import fit_translation as fit_translation, fit_rot_trans as fit_rot_trans
+from .wrap import wrap as wrap, unwrap as unwrap
+from .boxdimensions import set_dimensions as set_dimensions

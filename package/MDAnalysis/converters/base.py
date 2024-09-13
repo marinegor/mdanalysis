@@ -21,7 +21,7 @@
 # J. Comput. Chem. 32 (2011), 2319--2327, doi:10.1002/jcc.21787
 #
 
-""" Base classes --- :mod:`MDAnalysis.converters.base`
+"""Base classes --- :mod:`MDAnalysis.converters.base`
 ======================================================
 
 Converters output information to other libraries.
@@ -41,7 +41,7 @@ class _Convertermeta(type):
     def __init__(cls, name, bases, classdict):
         type.__init__(type, name, bases, classdict)
         try:
-            fmt = asiterable(classdict['lib'])
+            fmt = asiterable(classdict["lib"])
         except KeyError:
             pass
         else:
@@ -51,8 +51,7 @@ class _Convertermeta(type):
 
 
 class ConverterBase(IOBase, metaclass=_Convertermeta):
-    """Base class for converting to other libraries.
-    """
+    """Base class for converting to other libraries."""
 
     def __repr__(self):
         return "<{cls}>".format(cls=self.__class__.__name__)

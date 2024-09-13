@@ -31,8 +31,8 @@ See Also
 MDAnalysis.coordinates.XTC: Read and write GROMACS XTC trajectory files.
 MDAnalysis.coordinates.XDR: BaseReader/Writer for XDR based formats
 """
+
 import errno
-from . import base
 from .XDR import XDRBaseReader, XDRBaseWriter
 from ..lib.formats.libmdaxdr import TRRFile
 from ..lib.mdamath import triclinic_vectors, triclinic_box
@@ -57,10 +57,9 @@ class TRRWriter(XDRBaseWriter):
 
     """
 
-    format = 'TRR'
+    format = "TRR"
     multiframe = True
-    units = {'time': 'ps', 'length': 'nm', 'velocity': 'nm/ps',
-             'force': 'kJ/(mol*nm)'}
+    units = {"time": "ps", "length": "nm", "velocity": "nm/ps", "force": "kJ/(mol*nm)"}
     _file = TRRFile
 
     def _write_next_frame(self, ag):
@@ -114,7 +113,7 @@ class TRRWriter(XDRBaseWriter):
                 self.convert_forces_to_native(forces)
 
         time = ts.time
-        step = ts.data.get('step', ts.frame)
+        step = ts.data.get("step", ts.frame)
 
         if self._convert_units:
             dimensions = self.convert_dimensions_to_unitcell(ts, inplace=False)
@@ -122,11 +121,10 @@ class TRRWriter(XDRBaseWriter):
         box = triclinic_vectors(dimensions)
 
         lmbda = 0
-        if 'lambda' in ts.data:
-            lmbda = ts.data['lambda']
+        if "lambda" in ts.data:
+            lmbda = ts.data["lambda"]
 
-        self._xdr.write(xyz, velo, forces, box, step, time, lmbda,
-                        self.n_atoms)
+        self._xdr.write(xyz, velo, forces, box, step, time, lmbda, self.n_atoms)
 
 
 class TRRReader(XDRBaseReader):
@@ -146,22 +144,22 @@ class TRRReader(XDRBaseReader):
     offsets.
 
     """
-    format = 'TRR'
-    units = {'time': 'ps', 'length': 'nm', 'velocity': 'nm/ps',
-             'force': 'kJ/(mol*nm)'}
+
+    format = "TRR"
+    units = {"time": "ps", "length": "nm", "velocity": "nm/ps", "force": "kJ/(mol*nm)"}
     _writer = TRRWriter
     _file = TRRFile
 
     def _read_next_timestep(self, ts=None):
         """copy next frame into timestep
-        
+
         versionadded:: 2.4.0
             TRRReader implements this method so that it can use
             read_direct_xvf to read the data directly into the timestep
             rather than copying it from a temporary array.
         """
         if self._frame == self.n_frames - 1:
-            raise IOError(errno.EIO, 'trying to go over trajectory limit')
+            raise IOError(errno.EIO, "trying to go over trajectory limit")
         if ts is None:
             ts = self.ts
         # allocate arrays to read into, will set to proper values
@@ -178,7 +176,7 @@ class TRRReader(XDRBaseReader):
         """convert a trr-frame to a mda TimeStep"""
         ts.time = frame.time
         ts.frame = self._frame
-        ts.data['step'] = frame.step
+        ts.data["step"] = frame.step
 
         ts.has_positions = frame.hasx
         ts.has_velocities = frame.hasv
@@ -213,6 +211,6 @@ class TRRReader(XDRBaseReader):
             if self.convert_units:
                 self.convert_forces_from_native(ts.forces)
 
-        ts.data['lambda'] = frame.lmbda
+        ts.data["lambda"] = frame.lmbda
 
         return ts

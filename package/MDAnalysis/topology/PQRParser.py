@@ -47,6 +47,7 @@ Classes
 .. _PDB:     http://www.wwpdb.org/documentation/file-format
 
 """
+
 import numpy as np
 
 from . import guessers
@@ -96,7 +97,8 @@ class PQRParser(TopologyReaderBase):
        Can now read PQR files from Gromacs, these provide atom type as last column
        but don't have segids
     """
-    format = 'PQR'
+
+    format = "PQR"
 
     @staticmethod
     def guess_flavour(line):
@@ -119,11 +121,11 @@ class PQRParser(TopologyReaderBase):
             try:
                 float(fields[-1])
             except ValueError:
-                flavour = 'GROMACS'
+                flavour = "GROMACS"
             else:
-                flavour = 'ORIGINAL'
+                flavour = "ORIGINAL"
         else:
-            flavour = 'NO_CHAINID'
+            flavour = "NO_CHAINID"
         return flavour
 
     def parse(self, **kwargs):
@@ -154,20 +156,50 @@ class PQRParser(TopologyReaderBase):
 
                 if flavour is None:
                     flavour = self.guess_flavour(line)
-                if flavour == 'ORIGINAL':
-                    (recordName, serial, name, resName,
-                     chainID, resSeq, x, y, z, charge,
-                     radius) = fields
-                elif flavour == 'GROMACS':
-                    (recordName, serial, name, resName,
-                     resSeq, x, y, z, charge,
-                     radius, element) = fields
+                if flavour == "ORIGINAL":
+                    (
+                        recordName,
+                        serial,
+                        name,
+                        resName,
+                        chainID,
+                        resSeq,
+                        x,
+                        y,
+                        z,
+                        charge,
+                        radius,
+                    ) = fields
+                elif flavour == "GROMACS":
+                    (
+                        recordName,
+                        serial,
+                        name,
+                        resName,
+                        resSeq,
+                        x,
+                        y,
+                        z,
+                        charge,
+                        radius,
+                        element,
+                    ) = fields
                     chainID = "SYSTEM"
                     elements.append(element)
-                elif flavour == 'NO_CHAINID':
+                elif flavour == "NO_CHAINID":
                     # files without the chainID
-                    (recordName, serial, name, resName,
-                     resSeq, x, y, z, charge, radius) = fields
+                    (
+                        recordName,
+                        serial,
+                        name,
+                        resName,
+                        resSeq,
+                        x,
+                        y,
+                        z,
+                        charge,
+                        radius,
+                    ) = fields
                     chainID = "SYSTEM"
 
                 try:
@@ -177,7 +209,7 @@ class PQRParser(TopologyReaderBase):
                     resid = int(resSeq[:-1])
                     icode = resSeq[-1]
                 else:
-                    icode = ''
+                    icode = ""
 
                 record_types.append(recordName)
                 serials.append(serial)
@@ -214,8 +246,8 @@ class PQRParser(TopologyReaderBase):
         chainIDs = np.array(chainIDs, dtype=object)
 
         residx, (resids, resnames, icodes, chainIDs) = change_squash(
-            (resids, resnames, icodes, chainIDs),
-            (resids, resnames, icodes, chainIDs))
+            (resids, resnames, icodes, chainIDs), (resids, resnames, icodes, chainIDs)
+        )
 
         n_residues = len(resids)
         attrs.append(Resids(resids))
@@ -228,9 +260,13 @@ class PQRParser(TopologyReaderBase):
         n_segments = len(chainIDs)
         attrs.append(Segids(chainIDs))
 
-        top = Topology(n_atoms, n_residues, n_segments,
-                       attrs=attrs,
-                       atom_resindex=residx,
-                       residue_segindex=segidx)
+        top = Topology(
+            n_atoms,
+            n_residues,
+            n_segments,
+            attrs=attrs,
+            atom_resindex=residx,
+            residue_segindex=segidx,
+        )
 
         return top

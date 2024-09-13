@@ -44,11 +44,23 @@ from MDAnalysisTests.datafiles import (
 
 class BaseITP(ParserBase):
     parser = mda.topology.ITPParser.ITPParser
-    expected_attrs = ['ids', 'names', 'types', 'masses',
-                      'charges', 'chargegroups',
-                      'resids', 'resnames',
-                      'segids', 'moltypes', 'molnums',
-                      'bonds', 'angles', 'dihedrals', 'impropers']
+    expected_attrs = [
+        "ids",
+        "names",
+        "types",
+        "masses",
+        "charges",
+        "chargegroups",
+        "resids",
+        "resnames",
+        "segids",
+        "moltypes",
+        "molnums",
+        "bonds",
+        "angles",
+        "dihedrals",
+        "impropers",
+    ]
     expected_n_atoms = 63
     expected_n_residues = 10
     expected_n_segments = 1
@@ -64,13 +76,13 @@ class BaseITP(ParserBase):
 
     def test_bonds_total_counts(self, top):
         assert len(top.bonds.values) == self.expected_n_bonds
-    
+
     def test_angles_total_counts(self, top):
         assert len(top.angles.values) == self.expected_n_angles
 
     def test_dihedrals_total_counts(self, top):
         assert len(top.dihedrals.values) == self.expected_n_dihedrals
-    
+
     def test_impropers_total_counts(self, top):
         assert len(top.impropers.values) == self.expected_n_impropers
 
@@ -86,7 +98,7 @@ class TestITP(BaseITP):
     expected_n_angles = 91
     expected_n_dihedrals = 30
     expected_n_impropers = 29
-    
+
     def test_bonds_atom_counts(self, universe):
         assert len(universe.atoms[[0]].bonds) == 3
         assert len(universe.atoms[[42]].bonds) == 1
@@ -95,7 +107,7 @@ class TestITP(BaseITP):
         vals = top.bonds.values
         for b in ((0, 1), (0, 2), (0, 3), (3, 4)):
             assert b in vals
-        
+
     def test_bonds_type(self, universe):
         assert universe.bonds[0].type == 2
 
@@ -107,7 +119,7 @@ class TestITP(BaseITP):
         vals = top.angles.values
         for b in ((1, 0, 2), (1, 0, 3), (2, 0, 3)):
             assert (b in vals) or (b[::-1] in vals)
-    
+
     def test_angles_type(self, universe):
         assert universe.angles[0].type == 2
 
@@ -123,7 +135,7 @@ class TestITP(BaseITP):
         vals = top.dihedrals.values
         for b in ((1, 0, 3, 5), (0, 3, 5, 7)):
             assert (b in vals) or (b[::-1] in vals)
-    
+
     def test_dihedrals_type(self, universe):
         assert universe.dihedrals[0].type == (1, 1)
 
@@ -134,7 +146,7 @@ class TestITP(BaseITP):
         vals = top.impropers.values
         for b in ((3, 0, 5, 4), (5, 3, 7, 6)):
             assert (b in vals) or (b[::-1] in vals)
-    
+
     def test_impropers_type(self, universe):
         assert universe.impropers[0].type == 2
 
@@ -142,12 +154,24 @@ class TestITP(BaseITP):
 class TestITPNoMass(ParserBase):
     parser = mda.topology.ITPParser.ITPParser
     ref_filename = ITP_nomass
-    expected_attrs = ['ids', 'names', 'types', 'masses',
-                      'charges', 'chargegroups',
-                      'resids', 'resnames',
-                      'segids', 'moltypes', 'molnums',
-                      'bonds', 'angles', 'dihedrals', 'impropers']
-    guessed_attrs = ['masses']
+    expected_attrs = [
+        "ids",
+        "names",
+        "types",
+        "masses",
+        "charges",
+        "chargegroups",
+        "resids",
+        "resnames",
+        "segids",
+        "moltypes",
+        "molnums",
+        "bonds",
+        "angles",
+        "dihedrals",
+        "impropers",
+    ]
+    guessed_attrs = ["masses"]
     expected_n_atoms = 60
     expected_n_residues = 1
     expected_n_segments = 1
@@ -157,18 +181,30 @@ class TestITPNoMass(ParserBase):
         return mda.Universe(filename)
 
     def test_mass_guess(self, universe):
-        assert universe.atoms[0].mass not in ('', None)
+        assert universe.atoms[0].mass not in ("", None)
 
 
 class TestITPAtomtypes(ParserBase):
     parser = mda.topology.ITPParser.ITPParser
     ref_filename = ITP_atomtypes
-    expected_attrs = ['ids', 'names', 'types', 'masses',
-                      'charges', 'chargegroups',
-                      'resids', 'resnames',
-                      'segids', 'moltypes', 'molnums',
-                      'bonds', 'angles', 'dihedrals', 'impropers']
-    guessed_attrs = ['masses']
+    expected_attrs = [
+        "ids",
+        "names",
+        "types",
+        "masses",
+        "charges",
+        "chargegroups",
+        "resids",
+        "resnames",
+        "segids",
+        "moltypes",
+        "molnums",
+        "bonds",
+        "angles",
+        "dihedrals",
+        "impropers",
+    ]
+    guessed_attrs = ["masses"]
     expected_n_atoms = 4
     expected_n_residues = 1
     expected_n_segments = 1
@@ -181,7 +217,7 @@ class TestITPAtomtypes(ParserBase):
         assert_allclose(universe.atoms[0].charge, 4)
         assert_allclose(universe.atoms[1].charge, 1.1)
         assert_allclose(universe.atoms[2].charge, -3.000)
-        assert_allclose(universe.atoms[3].charge, 1.)
+        assert_allclose(universe.atoms[3].charge, 1.0)
 
     def test_mass_parse_or_guess(self, universe):
         # read from [ atoms ] section
@@ -197,11 +233,23 @@ class TestITPAtomtypes(ParserBase):
 class TestITPCharges(ParserBase):
     parser = mda.topology.ITPParser.ITPParser
     ref_filename = ITP_charges
-    expected_attrs = ['ids', 'names', 'types', 'masses',
-                      'charges', 'chargegroups',
-                      'resids', 'resnames',
-                      'segids', 'moltypes', 'molnums',
-                      'bonds', 'angles', 'dihedrals', 'impropers']
+    expected_attrs = [
+        "ids",
+        "names",
+        "types",
+        "masses",
+        "charges",
+        "chargegroups",
+        "resids",
+        "resnames",
+        "segids",
+        "moltypes",
+        "molnums",
+        "bonds",
+        "angles",
+        "dihedrals",
+        "impropers",
+    ]
     guessed_attrs = []
     expected_n_atoms = 9
     expected_n_residues = 3
@@ -215,13 +263,13 @@ class TestITPCharges(ParserBase):
         assert_allclose(universe.atoms[0].charge, -1.0)
         assert_allclose(universe.atoms[1].charge, 0)
         assert_allclose(universe.atoms[2].charge, 0)
-        assert_allclose(universe.atoms[3].charge, -1.)
+        assert_allclose(universe.atoms[3].charge, -1.0)
 
     def test_masses_are_read(self, universe):
         assert_allclose(universe.atoms.masses, [100] * 9)
 
-class TestDifferentDirectivesITP(BaseITP):
 
+class TestDifferentDirectivesITP(BaseITP):
     ref_filename = ITP_edited
 
     expected_n_bonds = 62 + 118
@@ -253,17 +301,18 @@ class TestITPNoKeywords(BaseITP):
         #ifndef HW1_CHARGE
             #define HW1_CHARGE 0.241
         #endif
-        
+
         [ atoms ]
             1       opls_118     1       SOL              OW             1       0
             2       opls_119     1       SOL             HW1             1       HW1_CHARGE
     """
+
     ref_filename = ITP_tip5p
     expected_n_atoms = 5
     expected_n_residues = 1
     expected_n_segments = 1
 
-    guessed_attrs = ['masses']
+    guessed_attrs = ["masses"]
 
     expected_n_bonds = 2
     # FLEXIBLE not set -> SETTLE constraint -> water has no angle
@@ -273,7 +322,7 @@ class TestITPNoKeywords(BaseITP):
 
     def test_whether_settles_types(self, universe):
         for param in list(universe.bonds) + list(universe.angles):
-            assert param.type == 'settles'
+            assert param.type == "settles"
 
     def test_bonds_values(self, top):
         vals = top.bonds.values
@@ -284,7 +333,7 @@ class TestITPNoKeywords(BaseITP):
         assert_allclose(top.charges.values[1], 0.241)
         assert_allclose(top.charges.values[2], 0.241)
 
-    
+
 class TestITPKeywords(TestITPNoKeywords):
     """
     Test reading ITP files *with* defined keywords.
@@ -296,14 +345,14 @@ class TestITPKeywords(TestITPNoKeywords):
 
     @pytest.fixture
     def universe(self, filename):
-        return mda.Universe(filename, FLEXIBLE=True, EXTRA_ATOMS=True, 
-                            HW1_CHARGE=1, HW2_CHARGE=3)
+        return mda.Universe(
+            filename, FLEXIBLE=True, EXTRA_ATOMS=True, HW1_CHARGE=1, HW2_CHARGE=3
+        )
 
     @pytest.fixture()
     def top(self, filename):
         with self.parser(filename) as p:
-            yield p.parse(FLEXIBLE=True, EXTRA_ATOMS=True, 
-                          HW1_CHARGE=1, HW2_CHARGE=3)
+            yield p.parse(FLEXIBLE=True, EXTRA_ATOMS=True, HW1_CHARGE=1, HW2_CHARGE=3)
 
     def test_whether_settles_types(self, universe):
         for param in list(universe.bonds) + list(universe.angles):
@@ -323,6 +372,7 @@ class TestNestedIfs(BaseITP):
     """
     Test reading ITP files with nested ifdef/ifndef conditions.
     """
+
     ref_filename = ITP_spce
     expected_n_atoms = 7
     expected_n_residues = 1
@@ -341,7 +391,7 @@ class TestNestedIfs(BaseITP):
     def top(self, filename):
         with self.parser(filename) as p:
             yield p.parse(HEAVY_H=True, EXTRA_ATOMS=True, HEAVY_SIX=True)
-    
+
     def test_heavy_atom(self, universe):
         assert universe.atoms[5].mass > 40
 
@@ -369,7 +419,7 @@ class TestReadTop(BaseITP):
 
     @pytest.fixture()
     def universe(self, filename):
-        return mda.Universe(filename, topology_format='ITP', include_dir=GMX_DIR)
+        return mda.Universe(filename, topology_format="ITP", include_dir=GMX_DIR)
 
     def test_output(self, filename):
         """Testing the call signature"""
@@ -378,7 +428,7 @@ class TestReadTop(BaseITP):
 
     def test_creates_universe(self, filename):
         """Check that Universe works with this Parser"""
-        u = mda.Universe(filename, topology_format='ITP', include_dir=GMX_DIR)
+        u = mda.Universe(filename, topology_format="ITP", include_dir=GMX_DIR)
 
     def test_sequential(self, universe):
         resids = np.array(list(range(2, 12)) + list(range(13, 23)))
@@ -388,7 +438,6 @@ class TestReadTop(BaseITP):
 
 
 class TestErrors:
-
     parser = mda.topology.ITPParser.ITPParser
 
     def test_no_include(self):
@@ -418,7 +467,7 @@ class TestRelativePath:
         p2 = tmpdir.mkdir("sub2")
         p2.chdir()
         with p2.as_cwd() as pchange:
-            u = mda.Universe(str("../sub1/test.itp"), format='ITP')
+            u = mda.Universe(str("../sub1/test.itp"), format="ITP")
 
     def test_relpath(self, tmpdir):
         content = """
@@ -431,7 +480,7 @@ class TestRelativePath:
         p2.chdir()
         with p2.as_cwd() as pchange:
             relpath = Path("../sub1/test.itp")
-            u = mda.Universe(relpath, format='ITP')
+            u = mda.Universe(relpath, format="ITP")
 
     def test_relative_path(self, tmpdir):
         test_itp_content = '#include "../atoms.itp"'

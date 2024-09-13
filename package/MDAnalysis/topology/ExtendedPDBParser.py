@@ -87,4 +87,5 @@ class ExtendedPDBParser(PDBParser.PDBParser):
 
     .. versionadded:: 0.8
     """
-    format = 'XPDB'
+
+    format = "XPDB"

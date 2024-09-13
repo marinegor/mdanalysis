@@ -112,27 +112,27 @@ Analysis classes
    :inherited-members:
 
    .. attribute:: results.dssp
-   
-      Contains the time series of the DSSP assignment as a 
+
+      Contains the time series of the DSSP assignment as a
       :class:`numpy.ndarray` array of shape ``(n_frames, n_residues)`` where each row
-      contains the assigned secondary structure character for each residue (whose 
+      contains the assigned secondary structure character for each residue (whose
       corresponding resid is stored in :attr:`results.resids`). The three characters
       are ['H', 'E', '-'] and representi alpha-helix, sheet and loop, respectively.
 
    .. attribute:: results.dssp_ndarray
-   
+
       Contains the one-hot encoding of the time series of the DSSP assignment
-      as a :class:`numpy.ndarray` Boolean array of shape ``(n_frames, n_residues, 3)`` 
+      as a :class:`numpy.ndarray` Boolean array of shape ``(n_frames, n_residues, 3)``
       where for each residue the encoding is stored as ``(3,)`` shape
-      :class:`numpy.ndarray` of Booleans so that ``True`` at index 0 represents loop 
-      ('-'), ``True`` at index 1 represents helix ('H'), and ``True`` at index 2 
+      :class:`numpy.ndarray` of Booleans so that ``True`` at index 0 represents loop
+      ('-'), ``True`` at index 1 represents helix ('H'), and ``True`` at index 2
       represents sheet 'E'.
 
       .. SeeAlso:: :func:`translate`
-      
+
 
    .. attribute:: results.resids
-   
+
       A :class:`numpy.ndarray` of length ``n_residues`` that contains the residue IDs
       (resids) for the protein residues that were assigned a secondary structure.
 
@@ -196,7 +196,7 @@ class DSSP(AnalysisBase):
     .. Warning::
        For DSSP to work properly, your atoms must represent a protein. The
        hydrogen atom bound to the backbone nitrogen atom is matched by name
-       as given by the keyword argument `hydrogen_atom`. There may only be 
+       as given by the keyword argument `hydrogen_atom`. There may only be
        a single backbone nitrogen hydrogen atom per residue; the one exception
        is proline, for which there should not exist any such hydrogens.
        The default value of `hydrogen_atom` should handle the common naming
@@ -229,8 +229,8 @@ class DSSP(AnalysisBase):
         (except proline), namely the one bound to the backbone nitrogen.
 
         .. Note::
-           To work with different hydrogen-naming conventions by default, the 
-           default selection is broad but if hydrogens are incorrectly selected 
+           To work with different hydrogen-naming conventions by default, the
+           default selection is broad but if hydrogens are incorrectly selected
            (e.g., a :exc:`ValueError` is raised) you must customize `hydrogen_name`
            for your specific case.
 
@@ -263,7 +263,7 @@ class DSSP(AnalysisBase):
     The :attr:`results.dssp_ndarray` attribute holds a
     ``(n_frames, n_residues, 3)`` shape ndarray with a *one-hot encoding*
     of *loop* '-' (index 0), *helix* 'H' (index 1), and *sheet* 'E'
-    (index 2), respectively for each frame of the trajectory. It can be 
+    (index 2), respectively for each frame of the trajectory. It can be
     used to compute, for instance, the **average secondary structure**:
 
     >>> from MDAnalysis.analysis.dssp import translate, DSSP
@@ -309,7 +309,7 @@ class DSSP(AnalysisBase):
         if not self._guess_hydrogens:
             # zip() assumes that _heavy_atoms and _hydrogens is ordered in the
             # same way. This is true as long as the original AtomGroup ag is
-            # sorted. With the hard-coded protein selection for ag this is always 
+            # sorted. With the hard-coded protein selection for ag this is always
             # true but if the code on L277 ever changes, make sure to sort first!
             for calpha, hydrogen in zip(
                 self._heavy_atoms["CA"][1:], self._hydrogens[1:]

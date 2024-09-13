@@ -43,8 +43,7 @@ def test_get_auxreader_for_wrong_format():
 
 
 def test_notimplemented_read_next_timestep():
-    with pytest.raises(NotImplementedError, match="BUG: Override "
-                       "_read_next_step()"):
+    with pytest.raises(NotImplementedError, match="BUG: Override " "_read_next_step()"):
         reader = mda.auxiliary.base.AuxReader()
 
 
@@ -54,7 +53,6 @@ class No_Memory_Usage(AuxReader):
 
 
 def test_notimplemented_memory_usage():
-    with pytest.raises(NotImplementedError, match="BUG: Override "
-                       "_memory_usage()"):
+    with pytest.raises(NotImplementedError, match="BUG: Override " "_memory_usage()"):
         reader = No_Memory_Usage()
         reader._memory_usage()

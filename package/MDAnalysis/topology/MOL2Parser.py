@@ -1,5 +1,5 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #
 # MDAnalysis --- https://www.mdanalysis.org
 # Copyright (c) 2006-2017 The MDAnalysis Development Team and contributors
@@ -41,6 +41,7 @@ Classes
    :inherited-members:
 
 """
+
 import os
 import numpy as np
 
@@ -95,7 +96,7 @@ class MOL2Parser(TopologyReaderBase):
       2. If no atoms have ``resname`` field, resnames attribute will not be set;
          If some atoms have ``resname`` while some do not,
          :exc:`ValueError` will occur.
-    
+
       3. If "NO_CHARGES" shows up in "@<TRIPOS>MOLECULE" section
          and no atoms have the ``charge`` field, charges attribute will not be set;
          If "NO_CHARGES" shows up while ``charge`` field appears,
@@ -130,7 +131,8 @@ class MOL2Parser(TopologyReaderBase):
     .. versionchanged:: 2.2.0
        Read MOL2 files with optional columns omitted.
     """
-    format = 'MOL2'
+
+    format = "MOL2"
 
     def parse(self, **kwargs):
         """Parse MOL2 file *filename* and return the dict `structure`.
@@ -152,8 +154,10 @@ class MOL2Parser(TopologyReaderBase):
                     blocks[-1]["lines"].append(line)
 
         if not len(blocks):
-            raise ValueError("The mol2 file '{0}' needs to have at least one"
-                             " @<TRIPOS>MOLECULE block".format(self.filename))
+            raise ValueError(
+                "The mol2 file '{0}' needs to have at least one"
+                " @<TRIPOS>MOLECULE block".format(self.filename)
+            )
         block = blocks[0]
 
         sections = {}
@@ -171,8 +175,11 @@ class MOL2Parser(TopologyReaderBase):
         atom_lines, bond_lines = sections["atom"], sections.get("bond")
 
         if not len(atom_lines):
-            raise ValueError("The mol2 block ({0}:{1}) has no atoms".format(
-                os.path.basename(self.filename), block["start_line"]))
+            raise ValueError(
+                "The mol2 block ({0}:{1}) has no atoms".format(
+                    os.path.basename(self.filename), block["start_line"]
+                )
+            )
 
         ids = []
         names = []
@@ -180,36 +187,41 @@ class MOL2Parser(TopologyReaderBase):
         resids = []
         resnames = []
         charges = []
-        has_charges = sections['molecule'][3].strip() != 'NO_CHARGES'
+        has_charges = sections["molecule"][3].strip() != "NO_CHARGES"
         for a in atom_lines:
             columns = a.split()
             if len(columns) >= 9:
-                aid, name, x, y, z, atom_type, \
-                    resid, resname, charge = columns[:9]
+                aid, name, x, y, z, atom_type, resid, resname, charge = columns[:9]
             elif len(columns) < 6:
-                raise ValueError(f"The @<TRIPOS>ATOM block in mol2 file"
-                                 f" {os.path.basename(self.filename)}"
-                                 f" should have at least 6 fields to be"
-                                 f" unpacked: atom_id atom_name x y z"
-                                 f" atom_type [subst_id[subst_name"
-                                 f" [charge [status_bit]]]]")
+                raise ValueError(
+                    f"The @<TRIPOS>ATOM block in mol2 file"
+                    f" {os.path.basename(self.filename)}"
+                    f" should have at least 6 fields to be"
+                    f" unpacked: atom_id atom_name x y z"
+                    f" atom_type [subst_id[subst_name"
+                    f" [charge [status_bit]]]]"
+                )
             else:
                 aid, name, x, y, z, atom_type = columns[:6]
                 id_name_charge = [1, None, None]
                 for i in range(6, len(columns)):
-                    id_name_charge[i-6] = columns[i]
+                    id_name_charge[i - 6] = columns[i]
                 resid, resname, charge = id_name_charge
             if has_charges:
                 if charge is None:
-                    raise ValueError(f"The mol2 file {self.filename}"
-                                     f" indicates a charge model"
-                                     f"{sections['molecule'][3]}, but"
-                                     f" no charge provided in line: {a}")
+                    raise ValueError(
+                        f"The mol2 file {self.filename}"
+                        f" indicates a charge model"
+                        f"{sections['molecule'][3]}, but"
+                        f" no charge provided in line: {a}"
+                    )
             else:
                 if charge is not None:
-                    raise ValueError(f"The mol2 file {self.filename}"
-                                     f" indicates no charges, but charge"
-                                     f" {charge} provided in line: {a}.")
+                    raise ValueError(
+                        f"The mol2 file {self.filename}"
+                        f" indicates no charges, but charge"
+                        f" {charge} provided in line: {a}."
+                    )
 
             ids.append(aid)
             names.append(name)
@@ -227,13 +239,15 @@ class MOL2Parser(TopologyReaderBase):
                 validated_elements[i] = SYBYL2SYMB[at]
             else:
                 invalid_elements.add(at)
-                validated_elements[i] = ''
+                validated_elements[i] = ""
 
         # Print single warning for all unknown elements, if any
         if invalid_elements:
-            warnings.warn("Unknown elements found for some "
-                          f"atoms: {invalid_elements}. "
-                          "These have been given an empty element record.")
+            warnings.warn(
+                "Unknown elements found for some "
+                f"atoms: {invalid_elements}. "
+                "These have been given an empty element record."
+            )
 
         masses = guessers.guess_masses(validated_elements)
 
@@ -245,29 +259,32 @@ class MOL2Parser(TopologyReaderBase):
             attrs.append(Charges(np.array(charges, dtype=np.float32)))
         attrs.append(Masses(masses, guessed=True))
 
-        if not np.all(validated_elements == ''):
+        if not np.all(validated_elements == ""):
             attrs.append(Elements(validated_elements))
 
         resids = np.array(resids, dtype=np.int32)
         resnames = np.array(resnames, dtype=object)
 
         if np.all(resnames):
-            residx, resids, (resnames,) = squash_by(
-                resids, resnames)
+            residx, resids, (resnames,) = squash_by(resids, resnames)
             n_residues = len(resids)
             attrs.append(Resids(resids))
             attrs.append(Resnums(resids.copy()))
             attrs.append(Resnames(resnames))
         elif not np.any(resnames):
-            residx, resids, _ = squash_by(resids,)
+            residx, resids, _ = squash_by(
+                resids,
+            )
             n_residues = len(resids)
             attrs.append(Resids(resids))
             attrs.append(Resnums(resids.copy()))
         else:
-            raise ValueError(f"Some atoms in the mol2 file {self.filename}"
-                             f" have subst_name while some do not.")
+            raise ValueError(
+                f"Some atoms in the mol2 file {self.filename}"
+                f" have subst_name while some do not."
+            )
 
-        attrs.append(Segids(np.array(['SYSTEM'], dtype=object)))
+        attrs.append(Segids(np.array(["SYSTEM"], dtype=object)))
 
         # don't add Bonds if there are none (Issue #3057)
         if bond_lines:
@@ -283,8 +300,6 @@ class MOL2Parser(TopologyReaderBase):
                 bonds.append(bond)
             attrs.append(Bonds(bonds, order=bondorder))
 
-        top = Topology(n_atoms, n_residues, 1,
-                       attrs=attrs,
-                       atom_resindex=residx)
+        top = Topology(n_atoms, n_residues, 1, attrs=attrs, atom_resindex=residx)
 
         return top

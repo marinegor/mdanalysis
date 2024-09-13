@@ -235,6 +235,7 @@ The class and its methods
          Will be removed in MDAnalysis 3.0.0. Please use
          :attr:`results.hbonds` instead.
 """
+
 import logging
 import warnings
 from collections.abc import Iterable
@@ -254,10 +255,12 @@ from ...due import due, Doi
 logger = logging.getLogger(__name__)
 
 
-due.cite(Doi("10.1039/C9CP01532A"),
-         description="Hydrogen bond analysis implementation",
-         path="MDAnalysis.analysis.hydrogenbonds.hbond_analysis",
-         cite_module=True)
+due.cite(
+    Doi("10.1039/C9CP01532A"),
+    description="Hydrogen bond analysis implementation",
+    path="MDAnalysis.analysis.hydrogenbonds.hbond_analysis",
+    cite_module=True,
+)
 
 del Doi
 
@@ -267,16 +270,23 @@ class HydrogenBondAnalysis(AnalysisBase):
     Perform an analysis of hydrogen bonds in a Universe.
     """
 
-    def __init__(self, universe,
-                 donors_sel=None, hydrogens_sel=None, acceptors_sel=None,
-                 between=None, d_h_cutoff=1.2,
-                 d_a_cutoff=3.0, d_h_a_angle_cutoff=150,
-                 update_selections=True):
+    def __init__(
+        self,
+        universe,
+        donors_sel=None,
+        hydrogens_sel=None,
+        acceptors_sel=None,
+        between=None,
+        d_h_cutoff=1.2,
+        d_a_cutoff=3.0,
+        d_h_a_angle_cutoff=150,
+        update_selections=True,
+    ):
         """Set up atom selections and geometric criteria for finding hydrogen
         bonds in a Universe.
 
         Hydrogen bond selections with `donors_sel` , `hydrogens_sel`, and
-        `acceptors_sel` may be achieved with either a *resname*, atom *name* 
+        `acceptors_sel` may be achieved with either a *resname*, atom *name*
         combination, or when those are absent, with atom *type* selections.
 
         Parameters
@@ -333,7 +343,7 @@ class HydrogenBondAnalysis(AnalysisBase):
         .. versionadded:: 2.0.0
             Added `between` keyword
         .. versionchanged:: 2.4.0
-            Added use of atom types in selection strings for hydrogen atoms, 
+            Added use of atom types in selection strings for hydrogen atoms,
             bond donors, or bond acceptors
 
         """
@@ -342,14 +352,19 @@ class HydrogenBondAnalysis(AnalysisBase):
         self._trajectory = self.u.trajectory
 
         self.donors_sel = donors_sel.strip() if donors_sel is not None else donors_sel
-        self.hydrogens_sel = hydrogens_sel.strip() if hydrogens_sel is not None else hydrogens_sel
-        self.acceptors_sel = acceptors_sel.strip() if acceptors_sel is not None else acceptors_sel
+        self.hydrogens_sel = (
+            hydrogens_sel.strip() if hydrogens_sel is not None else hydrogens_sel
+        )
+        self.acceptors_sel = (
+            acceptors_sel.strip() if acceptors_sel is not None else acceptors_sel
+        )
 
-        msg = ("{} is an empty selection string - no hydrogen bonds will "
-               "be found. This may be intended, but please check your "
-               "selection."
-               )
-        for sel in ['donors_sel', 'hydrogens_sel', 'acceptors_sel']:
+        msg = (
+            "{} is an empty selection string - no hydrogen bonds will "
+            "be found. This may be intended, but please check your "
+            "selection."
+        )
+        for sel in ["donors_sel", "hydrogens_sel", "acceptors_sel"]:
             val = getattr(self, sel)
             if isinstance(val, str) and not val:
                 warnings.warn(msg.format(sel))
@@ -367,14 +382,13 @@ class HydrogenBondAnalysis(AnalysisBase):
                 between_ags.append(
                     [
                         self.u.select_atoms(group1, updating=False),
-                        self.u.select_atoms(group2, updating=False)
+                        self.u.select_atoms(group2, updating=False),
                     ]
                 )
 
             self.between_ags = between_ags
         else:
             self.between_ags = None
-
 
         self.d_h_cutoff = d_h_cutoff
         self.d_a_cutoff = d_a_cutoff
@@ -383,19 +397,14 @@ class HydrogenBondAnalysis(AnalysisBase):
         self.results = Results()
         self.results.hbonds = None
 
-    def guess_hydrogens(self,
-                        select='all',
-                        max_mass=1.1,
-                        min_charge=0.3,
-                        min_mass=0.9
-                        ):
+    def guess_hydrogens(self, select="all", max_mass=1.1, min_charge=0.3, min_mass=0.9):
         """Guesses which hydrogen atoms should be used in the analysis.
 
         Parameters
         ----------
         select: str (optional)
-            :ref:`Selection string <selection-commands-label>` for atom group 
-            from which hydrogens will be identified. (e.g., ``(resname X and 
+            :ref:`Selection string <selection-commands-label>` for atom group
+            from which hydrogens will be identified. (e.g., ``(resname X and
             name H1)`` or ``type 2``)
         max_mass: float (optional)
             The mass of a hydrogen atom must be less than this value.
@@ -407,24 +416,24 @@ class HydrogenBondAnalysis(AnalysisBase):
         Returns
         -------
         potential_hydrogens: str
-            String containing the :attr:`resname` and :attr:`name` of all 
+            String containing the :attr:`resname` and :attr:`name` of all
             hydrogen atoms potentially capable of forming hydrogen bonds.
 
         Notes
         -----
-        Hydrogen selections may be achieved with either a resname, atom 
+        Hydrogen selections may be achieved with either a resname, atom
         name combination, or when those are absent, atom types.
 
         This function makes use of atomic masses and atomic charges to identify
-        which atoms are hydrogen atoms that are capable of participating in 
-        hydrogen bonding. If an atom has a mass less than :attr:`max_mass` and 
-        an atomic charge greater than :attr:`min_charge` then it is considered 
+        which atoms are hydrogen atoms that are capable of participating in
+        hydrogen bonding. If an atom has a mass less than :attr:`max_mass` and
+        an atomic charge greater than :attr:`min_charge` then it is considered
         capable of participating in hydrogen bonds.
 
-        If :attr:`hydrogens_sel` is `None`, this function is called to guess 
+        If :attr:`hydrogens_sel` is `None`, this function is called to guess
         the selection.
 
-        Alternatively, this function may be used to quickly generate a 
+        Alternatively, this function may be used to quickly generate a
         :class:`str` of potential hydrogen atoms involved in hydrogen bonding.
         This str may then be modified before being used to set the attribute
         :attr:`hydrogens_sel`.
@@ -440,25 +449,27 @@ class HydrogenBondAnalysis(AnalysisBase):
 
         ag = self.u.select_atoms(select)
         hydrogens_ag = ag[
-            np.logical_and.reduce((
-                ag.masses < max_mass,
-                ag.charges > min_charge,
-                ag.masses > min_mass,
-            ))
+            np.logical_and.reduce(
+                (
+                    ag.masses < max_mass,
+                    ag.charges > min_charge,
+                    ag.masses > min_mass,
+                )
+            )
         ]
 
         return self._group_categories(hydrogens_ag)
 
-    def guess_donors(self, select='all', max_charge=-0.5):
+    def guess_donors(self, select="all", max_charge=-0.5):
         """Guesses which atoms could be considered donors in the analysis. Only
-        use if the universe topology does not contain bonding information, 
+        use if the universe topology does not contain bonding information,
         otherwise donor-hydrogen pairs may be incorrectly assigned.
 
         Parameters
         ----------
         select: str (optional)
-            :ref:`Selection string <selection-commands-label>` for atom group 
-            from which donors will be identified. (e.g., ``(resname X and name 
+            :ref:`Selection string <selection-commands-label>` for atom group
+            from which donors will be identified. (e.g., ``(resname X and name
             O1)`` or ``type 2``)
         max_charge: float (optional)
             The charge of a donor atom must be less than this value.
@@ -466,27 +477,27 @@ class HydrogenBondAnalysis(AnalysisBase):
         Returns
         -------
         potential_donors: str
-            String containing the :attr:`resname` and :attr:`name` of all atoms 
+            String containing the :attr:`resname` and :attr:`name` of all atoms
             that are potentially capable of forming hydrogen bonds.
 
         Notes
         -----
-        Donor selections may be achieved with either a resname, atom 
+        Donor selections may be achieved with either a resname, atom
         name combination, or when those are absent, atom types.
 
-        This function makes use of and atomic charges to identify which atoms 
-        could be considered donor atoms in the hydrogen bond analysis. If an 
-        atom has an atomic charge less than :attr:`max_charge`, and it is 
-        within :attr:`d_h_cutoff` of a hydrogen atom, then it is considered 
+        This function makes use of and atomic charges to identify which atoms
+        could be considered donor atoms in the hydrogen bond analysis. If an
+        atom has an atomic charge less than :attr:`max_charge`, and it is
+        within :attr:`d_h_cutoff` of a hydrogen atom, then it is considered
         capable of participating in hydrogen bonds.
 
-        If :attr:`donors_sel` is `None`, and the universe topology does not 
-        have bonding information, this function is called to guess the 
+        If :attr:`donors_sel` is `None`, and the universe topology does not
+        have bonding information, this function is called to guess the
         selection.
 
-        Alternatively, this function may be used to quickly generate a 
-        :class:`str` of potential donor atoms involved in hydrogen bonding. 
-        This :class:`str` may then be modified before being used to set the 
+        Alternatively, this function may be used to quickly generate a
+        :class:`str` of potential donor atoms involved in hydrogen bonding.
+        This :class:`str` may then be modified before being used to set the
         attribute :attr:`donors_sel`.
 
 
@@ -496,7 +507,7 @@ class HydrogenBondAnalysis(AnalysisBase):
         """
 
         # We need to know `hydrogens_sel` before we can find donors
-        # Use a new variable `hydrogens_sel` so that we do not set 
+        # Use a new variable `hydrogens_sel` so that we do not set
         # `self.hydrogens_sel` if it is currently `None`
         if self.hydrogens_sel is None:
             hydrogens_sel = self.guess_hydrogens()
@@ -508,8 +519,10 @@ class HydrogenBondAnalysis(AnalysisBase):
         # times faster to access. This is because u.bonds also calculates
         # properties of each bond (e.g bond length). See:
         # https://github.com/MDAnalysis/mdanalysis/issues/2396#issuecomment-596251787
-        if (hasattr(self.u._topology, 'bonds') 
-           and len(self.u._topology.bonds.values) != 0):
+        if (
+            hasattr(self.u._topology, "bonds")
+            and len(self.u._topology.bonds.values) != 0
+        ):
             donors_ag = find_hydrogen_donors(hydrogens_ag)
             donors_ag = donors_ag.intersection(self.u.select_atoms(select))
         else:
@@ -517,7 +530,7 @@ class HydrogenBondAnalysis(AnalysisBase):
                 "({donors_sel}) and around {d_h_cutoff} {hydrogens_sel}".format(
                     donors_sel=select,
                     d_h_cutoff=self.d_h_cutoff,
-                    hydrogens_sel=hydrogens_sel
+                    hydrogens_sel=hydrogens_sel,
                 )
             )
 
@@ -525,17 +538,17 @@ class HydrogenBondAnalysis(AnalysisBase):
 
         return self._group_categories(donors_ag)
 
-    def guess_acceptors(self, select='all', max_charge=-0.5):
+    def guess_acceptors(self, select="all", max_charge=-0.5):
         """Guesses which atoms could be considered acceptors in the analysis.
 
-        Acceptor selections may be achieved with either a resname, atom 
+        Acceptor selections may be achieved with either a resname, atom
         name combination, or when those are absent, atom types.
 
         Parameters
         ----------
         select: str (optional)
             :ref:`Selection string <selection-commands-label>` for atom group
-            from which acceptors will be identified. (e.g., ``(resname X and 
+            from which acceptors will be identified. (e.g., ``(resname X and
             name O1)`` or ``type 2``)
         max_charge: float (optional)
             The charge of an acceptor atom must be less than this value.
@@ -543,25 +556,25 @@ class HydrogenBondAnalysis(AnalysisBase):
         Returns
         -------
         potential_acceptors: str
-            String containing the :attr:`resname` and :attr:`name` of all atoms 
+            String containing the :attr:`resname` and :attr:`name` of all atoms
             that potentially capable of forming hydrogen bonds.
 
         Notes
         -----
-        Acceptor selections may be achieved with either a resname, atom 
+        Acceptor selections may be achieved with either a resname, atom
         name combination, or when those are absent, atom types.
 
-        This function makes use of and atomic charges to identify which atoms 
-        could be considered acceptor atoms in the hydrogen bond analysis. If 
-        an atom has an atomic charge less than :attr:`max_charge` then it is 
+        This function makes use of and atomic charges to identify which atoms
+        could be considered acceptor atoms in the hydrogen bond analysis. If
+        an atom has an atomic charge less than :attr:`max_charge` then it is
         considered capable of participating in hydrogen bonds.
 
-        If :attr:`acceptors_sel` is `None`, this function is called to guess 
+        If :attr:`acceptors_sel` is `None`, this function is called to guess
         the selection.
 
-        Alternatively, this function may be used to quickly generate a 
-        :class:`str` of potential acceptor atoms involved in hydrogen bonding. 
-        This :class:`str` may then be modified before being used to set the 
+        Alternatively, this function may be used to quickly generate a
+        :class:`str` of potential acceptor atoms involved in hydrogen bonding.
+        This :class:`str` may then be modified before being used to set the
         attribute :attr:`acceptors_sel`.
 
 
@@ -577,14 +590,14 @@ class HydrogenBondAnalysis(AnalysisBase):
 
     @staticmethod
     def _group_categories(group):
-        """ Find categories according to universe constraints
-        
+        """Find categories according to universe constraints
+
         Parameters
         ----------
         group : AtomGroup
-            AtomGroups corresponding to either hydrogen bond acceptors, 
+            AtomGroups corresponding to either hydrogen bond acceptors,
             donors, or hydrogen atoms that meet their respective charge
-            and mass constraints. 
+            and mass constraints.
 
         Returns
         -------
@@ -597,16 +610,14 @@ class HydrogenBondAnalysis(AnalysisBase):
         """
 
         if hasattr(group, "resnames") and hasattr(group, "names"):
-            group_list = np.unique([
-                '(resname {} and name {})'.format(r, 
-                    p) for r, p in zip(group.resnames, group.names)
-            ])
-        else:
             group_list = np.unique(
                 [
-                    'type {}'.format(tp) for tp in group.types
+                    "(resname {} and name {})".format(r, p)
+                    for r, p in zip(group.resnames, group.names)
                 ]
             )
+        else:
+            group_list = np.unique(["type {}".format(tp) for tp in group.types])
 
         return " or ".join(group_list)
 
@@ -616,30 +627,36 @@ class HydrogenBondAnalysis(AnalysisBase):
         Returns
         -------
         donors, hydrogens: AtomGroup, AtomGroup
-            AtomGroups corresponding to all donors and all hydrogens. 
+            AtomGroups corresponding to all donors and all hydrogens.
             AtomGroups are ordered such that, if zipped, will
             produce a list of donor-hydrogen pairs.
         """
 
         # If donors_sel is not provided, use topology to find d-h pairs
         if self.donors_sel is None:
-
             # We're using u._topology.bonds rather than u.bonds as it is a million times faster to access.
             # This is because u.bonds also calculates properties of each bond (e.g bond length).
             # See https://github.com/MDAnalysis/mdanalysis/issues/2396#issuecomment-596251787
-            if not (hasattr(self.u._topology, 'bonds') and len(self.u._topology.bonds.values) != 0):
-                raise NoDataError('Cannot assign donor-hydrogen pairs via topology as no bond information is present. '
-                                  'Please either: load a topology file with bond information; use the guess_bonds() '
-                                  'topology guesser; or set HydrogenBondAnalysis.donors_sel so that a distance cutoff '
-                                  'can be used.')
+            if not (
+                hasattr(self.u._topology, "bonds")
+                and len(self.u._topology.bonds.values) != 0
+            ):
+                raise NoDataError(
+                    "Cannot assign donor-hydrogen pairs via topology as no bond information is present. "
+                    "Please either: load a topology file with bond information; use the guess_bonds() "
+                    "topology guesser; or set HydrogenBondAnalysis.donors_sel so that a distance cutoff "
+                    "can be used."
+                )
 
             hydrogens = self.u.select_atoms(self.hydrogens_sel)
-            donors = sum(h.bonded_atoms[0] for h in hydrogens) if hydrogens \
+            donors = (
+                sum(h.bonded_atoms[0] for h in hydrogens)
+                if hydrogens
                 else AtomGroup([], self.u)
+            )
 
         # Otherwise, use d_h_cutoff as a cutoff distance
         else:
-
             hydrogens = self.u.select_atoms(self.hydrogens_sel)
             donors = self.u.select_atoms(self.donors_sel)
             donors_indices, hydrogen_indices = capped_distance(
@@ -647,7 +664,7 @@ class HydrogenBondAnalysis(AnalysisBase):
                 hydrogens.positions,
                 max_cutoff=self.d_h_cutoff,
                 box=self.u.dimensions,
-                return_distances=False
+                return_distances=False,
             ).T
 
             donors = donors[donors_indices]
@@ -658,43 +675,41 @@ class HydrogenBondAnalysis(AnalysisBase):
     def _filter_atoms(self, donors, acceptors):
         """Create a mask to filter donor, hydrogen and acceptor atoms.
 
-        This can be used to consider only hydrogen bonds between two or more
-        specified groups.
+                This can be used to consider only hydrogen bonds between two or more
+                specified groups.
 
-        Groups are specified with the `between` keyword when creating the
-        HydrogenBondAnalysis object.
+                Groups are specified with the `between` keyword when creating the
+                HydrogenBondAnalysis object.
 
-           Returns
-           -------
-           mask: np.ndarray
+                   Returns
+                   -------
+                   mask: np.ndarray
 
 
-        .. versionchanged:: 2.5.0
-           Change return value to a mask instead of separate AtomGroups.
-``
+                .. versionchanged:: 2.5.0
+                   Change return value to a mask instead of separate AtomGroups.
+        ``
         """
 
         mask = np.full(donors.n_atoms, fill_value=False)
         for group1, group2 in self.between_ags:
-
             # Find donors in G1 and acceptors in G2
             mask[
-                    np.logical_and(
-                        np.isin(donors.indices, group1.indices),
-                        np.isin(acceptors.indices, group2.indices)
-                    )
+                np.logical_and(
+                    np.isin(donors.indices, group1.indices),
+                    np.isin(acceptors.indices, group2.indices),
+                )
             ] = True
 
             # Find acceptors in G1 and donors in G2
             mask[
                 np.logical_and(
                     np.isin(acceptors.indices, group1.indices),
-                    np.isin(donors.indices, group2.indices)
+                    np.isin(donors.indices, group2.indices),
                 )
             ] = True
 
         return mask
-
 
     def _prepare(self):
         self.results.hbonds = [[], [], [], [], [], []]
@@ -706,12 +721,12 @@ class HydrogenBondAnalysis(AnalysisBase):
             self.hydrogens_sel = self.guess_hydrogens()
 
         # Select atom groups
-        self._acceptors = self.u.select_atoms(self.acceptors_sel,
-                                              updating=self.update_selections)
+        self._acceptors = self.u.select_atoms(
+            self.acceptors_sel, updating=self.update_selections
+        )
         self._donors, self._hydrogens = self._get_dh_pairs()
 
     def _single_frame(self):
-
         box = self._ts.dimensions
 
         # Update donor-hydrogen pairs if necessary
@@ -756,7 +771,7 @@ class HydrogenBondAnalysis(AnalysisBase):
                 tmp_donors.positions,
                 tmp_hydrogens.positions,
                 tmp_acceptors.positions,
-                box=box
+                box=box,
             )
         )
         hbond_indices = np.where(d_h_a_angles > self.d_h_a_angle)[0]
@@ -776,8 +791,7 @@ class HydrogenBondAnalysis(AnalysisBase):
         hbond_angles = d_h_a_angles[hbond_indices]
 
         # Store data on hydrogen bonds found at this frame
-        self.results.hbonds[0].extend(np.full_like(hbond_donors,
-                                      self._ts.frame))
+        self.results.hbonds[0].extend(np.full_like(hbond_donors, self._ts.frame))
         self.results.hbonds[1].extend(hbond_donors.indices)
         self.results.hbonds[2].extend(hbond_hydrogens.indices)
         self.results.hbonds[3].extend(hbond_acceptors.indices)
@@ -785,14 +799,15 @@ class HydrogenBondAnalysis(AnalysisBase):
         self.results.hbonds[5].extend(hbond_angles)
 
     def _conclude(self):
-
         self.results.hbonds = np.asarray(self.results.hbonds).T
 
     @property
     def hbonds(self):
-        wmsg = ("The `hbonds` attribute was deprecated in MDAnalysis 2.0.0 "
-                "and will be removed in MDAnalysis 3.0.0. Please use "
-                "`results.hbonds` instead.")
+        wmsg = (
+            "The `hbonds` attribute was deprecated in MDAnalysis 2.0.0 "
+            "and will be removed in MDAnalysis 3.0.0. Please use "
+            "`results.hbonds` instead."
+        )
         warnings.warn(wmsg, DeprecationWarning)
         return self.results.hbonds
 
@@ -847,8 +862,7 @@ class HydrogenBondAnalysis(AnalysisBase):
                 "before the hydrogen bonds are found"
             )
             logger.error(
-                "Autocorrelation: Please use the .run() before calling this"
-                "function"
+                "Autocorrelation: Please use the .run() before calling this" "function"
             )
             raise NoDataError(".hbonds attribute is None: use .run() first")
 
@@ -873,13 +887,10 @@ class HydrogenBondAnalysis(AnalysisBase):
                 found_hydrogen_bonds[frame_index].add(frozenset(hbond[2:4]))
 
         intermittent_hbonds = correct_intermittency(
-            found_hydrogen_bonds,
-            intermittency=intermittency
+            found_hydrogen_bonds, intermittency=intermittency
         )
         tau_timeseries, timeseries, timeseries_data = autocorrelation(
-            intermittent_hbonds,
-            tau_max,
-            window_step=window_step
+            intermittent_hbonds, tau_max, window_step=window_step
         )
 
         return np.vstack([tau_timeseries, timeseries])
@@ -895,8 +906,9 @@ class HydrogenBondAnalysis(AnalysisBase):
              the number of hydrogen bonds over time.
         """
 
-        indices, tmp_counts = np.unique(self.results.hbonds[:, 0], axis=0,
-                                        return_counts=True)
+        indices, tmp_counts = np.unique(
+            self.results.hbonds[:, 0], axis=0, return_counts=True
+        )
 
         indices -= self.start
         indices /= self.step
@@ -912,13 +924,13 @@ class HydrogenBondAnalysis(AnalysisBase):
         Returns
         -------
         counts : numpy.ndarray
-             Each row of the array contains the donor resname, donor atom type, 
-             acceptor resname, acceptor atom type and the total number of times 
+             Each row of the array contains the donor resname, donor atom type,
+             acceptor resname, acceptor atom type and the total number of times
              the hydrogen bond was found.
 
         Note
         ----
-        Unique hydrogen bonds are determined through a consideration of the 
+        Unique hydrogen bonds are determined through a consideration of the
         resname and atom type of the donor and acceptor atoms in a hydrogen bond.
         """
 
@@ -933,12 +945,12 @@ class HydrogenBondAnalysis(AnalysisBase):
             a_res = len(a.types) * ["None"]
 
         tmp_hbonds = np.array([d_res, d.types, a_res, a.types], dtype=str).T
-        hbond_type, type_counts = np.unique(
-            tmp_hbonds, axis=0, return_counts=True)
+        hbond_type, type_counts = np.unique(tmp_hbonds, axis=0, return_counts=True)
         hbond_type_list = []
         for hb_type, hb_count in zip(hbond_type, type_counts):
-            hbond_type_list.append([":".join(hb_type[:2]),
-                                    ":".join(hb_type[2:4]), hb_count])
+            hbond_type_list.append(
+                [":".join(hb_type[:2]), ":".join(hb_type[2:4]), hb_count]
+            )
 
         return np.array(hbond_type_list)
 
@@ -962,12 +974,10 @@ class HydrogenBondAnalysis(AnalysisBase):
         a = self.u.atoms[self.results.hbonds[:, 3].astype(np.intp)]
 
         tmp_hbonds = np.array([d.ids, h.ids, a.ids]).T
-        hbond_ids, ids_counts = np.unique(tmp_hbonds, axis=0,
-                                          return_counts=True)
+        hbond_ids, ids_counts = np.unique(tmp_hbonds, axis=0, return_counts=True)
 
         # Find unique hbonds and sort rows so that most frequent observed bonds are at the top of the array
-        unique_hbonds = np.concatenate((hbond_ids, ids_counts[:, None]),
-                                       axis=1)
+        unique_hbonds = np.concatenate((hbond_ids, ids_counts[:, None]), axis=1)
         unique_hbonds = unique_hbonds[unique_hbonds[:, 3].argsort()[::-1]]
 
         return unique_hbonds

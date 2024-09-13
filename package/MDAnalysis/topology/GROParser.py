@@ -44,6 +44,7 @@ Classes
    :inherited-members:
 
 """
+
 import numpy as np
 
 from ..lib.util import openany
@@ -75,7 +76,8 @@ class GROParser(TopologyReaderBase):
       - atomtypes
       - masses
     """
-    format = 'GRO'
+
+    format = "GRO"
 
     def parse(self, **kwargs):
         """Return the *Topology* object for this file"""
@@ -101,14 +103,16 @@ class GROParser(TopologyReaderBase):
                     indices[i] = int(line[15:20])
                 except (ValueError, TypeError):
                     errmsg = (
-                    f"Couldn't read the following line of the .gro file:\n"
-                    f"{line}")
+                        f"Couldn't read the following line of the .gro file:\n"
+                        f"{line}"
+                    )
                     raise IOError(errmsg) from None
         # Check all lines had names
         if not np.all(names):
-            missing = np.where(names == '')
-            raise IOError("Missing atom name on line: {0}"
-                          "".format(missing[0][0] + 3))  # 2 header, 1 based
+            missing = np.where(names == "")
+            raise IOError(
+                "Missing atom name on line: {0}" "".format(missing[0][0] + 3)
+            )  # 2 header, 1 based
 
         # Fix wrapping of resids (if we ever saw a wrap)
         if np.any(resids == 0):
@@ -134,7 +138,8 @@ class GROParser(TopologyReaderBase):
         masses = guessers.guess_masses(atomtypes)
 
         residx, (new_resids, new_resnames) = change_squash(
-                                (resids, resnames), (resids, resnames))
+            (resids, resnames), (resids, resnames)
+        )
 
         # new_resids is len(residues)
         # so resindex 0 has resid new_resids[0]
@@ -146,12 +151,16 @@ class GROParser(TopologyReaderBase):
             Resnums(new_resids.copy()),
             Resnames(new_resnames),
             Masses(masses, guessed=True),
-            Segids(np.array(['SYSTEM'], dtype=object))
+            Segids(np.array(["SYSTEM"], dtype=object)),
         ]
 
-        top = Topology(n_atoms=n_atoms, n_res=len(new_resids), n_seg=1,
-                       attrs=attrs,
-                       atom_resindex=residx,
-                       residue_segindex=None)
+        top = Topology(
+            n_atoms=n_atoms,
+            n_res=len(new_resids),
+            n_seg=1,
+            attrs=attrs,
+            atom_resindex=residx,
+            residue_segindex=None,
+        )
 
         return top

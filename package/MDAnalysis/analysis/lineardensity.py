@@ -28,7 +28,6 @@ A tool to compute mass and charge density profiles along the three
 cartesian axes [xyz] of the simulation cell. Works only for orthorombic,
 fixed volume cells (thus for simulations in canonical NVT ensemble).
 """
-import os.path as path
 
 import numpy as np
 import warnings
@@ -44,16 +43,19 @@ class Results(Results):
     the docstring for LinearDensity for details. The Results class is defined
     here to implement deprecation warnings for the user."""
 
-    _deprecation_dict = {"pos": "mass_density",
-                         "pos_std": "mass_density_stddev",
-                         "char": "charge_density",
-                         "char_std": "charge_density_stddev"}
+    _deprecation_dict = {
+        "pos": "mass_density",
+        "pos_std": "mass_density_stddev",
+        "char": "charge_density",
+        "char_std": "charge_density_stddev",
+    }
 
     def _deprecation_warning(self, key):
         warnings.warn(
             f"`{key}` is deprecated and will be removed in version 3.0.0. "
             f"Please use `{self._deprecation_dict[key]}` instead.",
-            DeprecationWarning)
+            DeprecationWarning,
+        )
 
     def __getitem__(self, key):
         if key in self._deprecation_dict.keys():
@@ -193,9 +195,8 @@ class LinearDensity(AnalysisBase):
        and :attr:`results.x.charge_density_stddev` instead.
     """
 
-    def __init__(self, select, grouping='atoms', binsize=0.25, **kwargs):
-        super(LinearDensity, self).__init__(select.universe.trajectory,
-                                            **kwargs)
+    def __init__(self, select, grouping="atoms", binsize=0.25, **kwargs):
+        super(LinearDensity, self).__init__(select.universe.trajectory, **kwargs)
         # allows use of run(parallel=True)
         self._ags = [select]
         self._universe = select.universe
@@ -222,13 +223,17 @@ class LinearDensity(AnalysisBase):
         self.nbins = bins.max()
         slices_vol = self.volume / bins
 
-        self.keys = ['mass_density', 'mass_density_stddev',
-                     'charge_density', 'charge_density_stddev']
+        self.keys = [
+            "mass_density",
+            "mass_density_stddev",
+            "charge_density",
+            "charge_density_stddev",
+        ]
 
         # Initialize results array with zeros
         for dim in self.results:
-            idx = self.results[dim]['dim']
-            self.results[dim]['slice_volume'] = slices_vol[idx]
+            idx = self.results[dim]["dim"]
+            self.results[dim]["slice_volume"] = slices_vol[idx]
             for key in self.keys:
                 self.results[dim][key] = np.zeros(self.nbins)
 
@@ -248,8 +253,7 @@ class LinearDensity(AnalysisBase):
             self.charges = self._ags[0].total_charge(compound=self.grouping)
 
         else:
-            raise AttributeError(
-                f"{self.grouping} is not a valid value for grouping.")
+            raise AttributeError(f"{self.grouping} is not a valid value for grouping.")
 
         self.totalmass = np.sum(self.masses)
 
@@ -257,37 +261,41 @@ class LinearDensity(AnalysisBase):
         self._ags[0].wrap(compound=self.grouping)
 
         # Find position of atom/group of atoms
-        if self.grouping == 'atoms':
+        if self.grouping == "atoms":
             positions = self._ags[0].positions  # faster for atoms
         else:
             # Centre of mass for residues, segments, fragments
             positions = self._ags[0].center_of_mass(compound=self.grouping)
 
-        for dim in ['x', 'y', 'z']:
-            idx = self.results[dim]['dim']
+        for dim in ["x", "y", "z"]:
+            idx = self.results[dim]["dim"]
 
-            key = 'mass_density'
-            key_std = 'mass_density_stddev'
+            key = "mass_density"
+            key_std = "mass_density_stddev"
             # histogram for positions weighted on masses
-            hist, _ = np.histogram(positions[:, idx],
-                                   weights=self.masses,
-                                   bins=self.nbins,
-                                   range=(0.0, max(self.dimensions)))
+            hist, _ = np.histogram(
+                positions[:, idx],
+                weights=self.masses,
+                bins=self.nbins,
+                range=(0.0, max(self.dimensions)),
+            )
 
             self.results[dim][key] += hist
             self.results[dim][key_std] += np.square(hist)
 
-            key = 'charge_density'
-            key_std = 'charge_density_stddev'
+            key = "charge_density"
+            key_std = "charge_density_stddev"
             # histogram for positions weighted on charges
-            hist, bin_edges = np.histogram(positions[:, idx],
-                                           weights=self.charges,
-                                           bins=self.nbins,
-                                           range=(0.0, max(self.dimensions)))
+            hist, bin_edges = np.histogram(
+                positions[:, idx],
+                weights=self.charges,
+                bins=self.nbins,
+                range=(0.0, max(self.dimensions)),
+            )
 
             self.results[dim][key] += hist
             self.results[dim][key_std] += np.square(hist)
-            self.results[dim]['hist_bin_edges'] = bin_edges
+            self.results[dim]["hist_bin_edges"] = bin_edges
 
     def _conclude(self):
         avogadro = constants["N_Avogadro"]  # unit: mol^{-1}
@@ -296,9 +304,13 @@ class LinearDensity(AnalysisBase):
         k = avogadro * volume_conversion
 
         # Average results over the number of configurations
-        for dim in ['x', 'y', 'z']:
-            for key in ['mass_density', 'mass_density_stddev',
-                        'charge_density', 'charge_density_stddev']:
+        for dim in ["x", "y", "z"]:
+            for key in [
+                "mass_density",
+                "mass_density_stddev",
+                "charge_density",
+                "charge_density_stddev",
+            ]:
                 self.results[dim][key] /= self.n_frames
             # Compute standard deviation for the error
             # For certain tests in testsuite, floating point imprecision
@@ -306,29 +318,32 @@ class LinearDensity(AnalysisBase):
             # radicand_mass and radicand_charge are therefore calculated first
             # and negative values set to 0 before the square root
             # is calculated.
-            radicand_mass = self.results[dim]['mass_density_stddev'] - \
-                np.square(self.results[dim]['mass_density'])
+            radicand_mass = self.results[dim]["mass_density_stddev"] - np.square(
+                self.results[dim]["mass_density"]
+            )
             radicand_mass[radicand_mass < 0] = 0
-            self.results[dim]['mass_density_stddev'] = np.sqrt(radicand_mass)
+            self.results[dim]["mass_density_stddev"] = np.sqrt(radicand_mass)
 
-            radicand_charge = self.results[dim]['charge_density_stddev'] - \
-                np.square(self.results[dim]['charge_density'])
+            radicand_charge = self.results[dim]["charge_density_stddev"] - np.square(
+                self.results[dim]["charge_density"]
+            )
             radicand_charge[radicand_charge < 0] = 0
-            self.results[dim]['charge_density_stddev'] = \
-                np.sqrt(radicand_charge)
+            self.results[dim]["charge_density_stddev"] = np.sqrt(radicand_charge)
 
-        for dim in ['x', 'y', 'z']:
+        for dim in ["x", "y", "z"]:
             # norming factor, units of mol^-1 cm^3
-            norm = k * self.results[dim]['slice_volume']
+            norm = k * self.results[dim]["slice_volume"]
             for key in self.keys:
                 self.results[dim][key] /= norm
 
     # TODO: Remove in 3.0.0
-    @deprecate(release="2.2.0", remove="3.0.0",
-               message="It will be replaced by a :meth:`_reduce` "
-               "method in the future")
+    @deprecate(
+        release="2.2.0",
+        remove="3.0.0",
+        message="It will be replaced by a :meth:`_reduce` " "method in the future",
+    )
     def _add_other_results(self, other):
         """For parallel analysis"""
-        for dim in ['x', 'y', 'z']:
+        for dim in ["x", "y", "z"]:
             for key in self.keys:
                 self.results[dim][key] += other.results[dim][key]

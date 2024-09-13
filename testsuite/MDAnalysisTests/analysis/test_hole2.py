@@ -23,7 +23,6 @@
 import pytest
 
 from importlib import reload
-import pytest
 
 from MDAnalysis.analysis import hole2
 

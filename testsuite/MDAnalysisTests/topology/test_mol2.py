@@ -175,10 +175,16 @@ USER_CHARGES
 class TestMOL2Base(ParserBase):
     parser = mda.topology.MOL2Parser.MOL2Parser
     expected_attrs = [
-        'ids', 'names', 'types', 'charges', 'resids', 'resnames', 'bonds',
-        'elements',
+        "ids",
+        "names",
+        "types",
+        "charges",
+        "resids",
+        "resnames",
+        "bonds",
+        "elements",
     ]
-    guessed_attrs = ['masses']
+    guessed_attrs = ["masses"]
     expected_n_atoms = 49
     expected_n_residues = 1
     expected_n_segments = 1
@@ -202,10 +208,12 @@ class TestMOL2Base(ParserBase):
 
 
 def test_bond_orders():
-    ref_orders = ('am 1 1 2 1 2 1 1 am 1 1 am 2 2 '
-                  '1 1 1 1 1 1 1 1 1 1 1 1 1 1 '
-                  'ar ar ar 1 ar 1 ar 1 ar 1 1 1 '
-                  '2 1 1 1 1 2 1 1 2 1 1').split()
+    ref_orders = (
+        "am 1 1 2 1 2 1 1 am 1 1 am 2 2 "
+        "1 1 1 1 1 1 1 1 1 1 1 1 1 1 "
+        "ar ar ar 1 ar 1 ar 1 ar 1 1 1 "
+        "2 1 1 1 1 2 1 1 2 1 1"
+    ).split()
     u = mda.Universe(mol2_molecule)
     orders = [bond.order for bond in u.atoms.bonds]
     assert_equal(orders, ref_orders)
@@ -214,10 +222,7 @@ def test_bond_orders():
 def test_elements():
     u = mda.Universe(mol2_molecule)
 
-    assert_equal(
-        u.atoms.elements[:5],
-        np.array(["N", "S", "N", "N", "O"], dtype="U3")
-    )
+    assert_equal(u.atoms.elements[:5], np.array(["N", "S", "N", "N", "O"], dtype="U3"))
 
 
 # Test for #2927
@@ -225,47 +230,54 @@ def test_elements_selection():
     u = mda.Universe(mol2_molecule)
     ag = u.select_atoms("element S")
 
-    assert_equal(
-        ag.elements,
-        np.array(["S", "S"], dtype="U3")
-    )
+    assert_equal(ag.elements, np.array(["S", "S"], dtype="U3"))
 
 
 def test_wrong_elements_warnings():
-    with pytest.warns(UserWarning, match='Unknown elements found') as record:
-        u = mda.Universe(StringIO(mol2_wrong_element), format='MOL2')
+    with pytest.warns(UserWarning, match="Unknown elements found") as record:
+        u = mda.Universe(StringIO(mol2_wrong_element), format="MOL2")
 
     # One warning from invalid elements, one from invalid masses
     assert len(record) == 2
 
-    expected = np.array(['N', '', ''], dtype=object)
+    expected = np.array(["N", "", ""], dtype=object)
     assert_equal(u.atoms.elements, expected)
 
 
 def test_all_wrong_elements_warnings():
-    with pytest.warns(UserWarning, match='Unknown elements found'):
-        u = mda.Universe(StringIO(mol2_all_wrong_elements), format='MOL2')
+    with pytest.warns(UserWarning, match="Unknown elements found"):
+        u = mda.Universe(StringIO(mol2_all_wrong_elements), format="MOL2")
 
-    with pytest.raises(mda.exceptions.NoDataError,
-                       match='This Universe does not contain element '
-                       'information'):
-
+    with pytest.raises(
+        mda.exceptions.NoDataError,
+        match="This Universe does not contain element " "information",
+    ):
         u.atoms.elements
 
 
 def test_all_elements():
-    with pytest.warns(UserWarning, match='Unknown elements found'):
-        u = mda.Universe(StringIO(mol2_fake), format='MOL2')
+    with pytest.warns(UserWarning, match="Unknown elements found"):
+        u = mda.Universe(StringIO(mol2_fake), format="MOL2")
 
-    expected = ["H"] * 2 + [""] + ["C"] * 5 + [""] + ["N"] * 4 + ["O"] * 5 + \
-        ["S"] * 6 + ["P"] + ["Cr"] * 2 + ["Co"]
+    expected = (
+        ["H"] * 2
+        + [""]
+        + ["C"] * 5
+        + [""]
+        + ["N"] * 4
+        + ["O"] * 5
+        + ["S"] * 6
+        + ["P"]
+        + ["Cr"] * 2
+        + ["Co"]
+    )
     expected = np.array(expected, dtype=object)
     assert_equal(u.atoms.elements, expected)
 
 
 # Test for Issue #3385 / PR #3598
 def test_wo_optional_columns():
-    u = mda.Universe(StringIO(mol2_wo_opt_col), format='MOL2')
+    u = mda.Universe(StringIO(mol2_wo_opt_col), format="MOL2")
     assert_equal(u.atoms.resids, np.array([1, 1]))
     with pytest.raises(mda.exceptions.NoDataError):
         u.atoms.resnames
@@ -274,7 +286,7 @@ def test_wo_optional_columns():
 
 
 def test_partial_optional_columns():
-    u = mda.Universe(StringIO(mol2_partial_opt_col), format='MOL2')
+    u = mda.Universe(StringIO(mol2_partial_opt_col), format="MOL2")
     assert_equal(u.atoms.resids, np.array([1, 2]))
     with pytest.raises(mda.exceptions.NoDataError):
         u.atoms.resnames
@@ -283,21 +295,17 @@ def test_partial_optional_columns():
 
 
 def test_mol2_wo_required_columns():
-    with pytest.raises(ValueError,
-                       match='The @<TRIPOS>ATOM block in mol2 file'):
-        u = mda.Universe(StringIO(mol2_wo_required_col), format='MOL2')
+    with pytest.raises(ValueError, match="The @<TRIPOS>ATOM block in mol2 file"):
+        u = mda.Universe(StringIO(mol2_wo_required_col), format="MOL2")
 
 
 def test_mol2_no_charges():
-    with pytest.raises(ValueError,
-                       match='indicates no charges'):
-        u = mda.Universe(StringIO(mol2_no_charge_error1), format='MOL2')
-    with pytest.raises(ValueError,
-                       match='indicates a charge model'):
-        u = mda.Universe(StringIO(mol2_no_charge_error2), format='MOL2')
+    with pytest.raises(ValueError, match="indicates no charges"):
+        u = mda.Universe(StringIO(mol2_no_charge_error1), format="MOL2")
+    with pytest.raises(ValueError, match="indicates a charge model"):
+        u = mda.Universe(StringIO(mol2_no_charge_error2), format="MOL2")
 
 
 def test_unformat():
-    with pytest.raises(ValueError,
-                       match='Some atoms in the mol2 file'):
-        u = mda.Universe(StringIO(mol2_resname_unformat), format='MOL2')
+    with pytest.raises(ValueError, match="Some atoms in the mol2 file"):
+        u = mda.Universe(StringIO(mol2_resname_unformat), format="MOL2")

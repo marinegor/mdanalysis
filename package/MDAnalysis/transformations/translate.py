@@ -36,6 +36,7 @@ or defined by centering an AtomGroup in the unit cell using the function
 
 
 """
+
 import numpy as np
 from functools import partial
 
@@ -70,10 +71,9 @@ class translate(TransformationBase):
        The transformation was changed to inherit from the base class for
        limiting threads and checking if it can be used in parallel analysis.
     """
-    def __init__(self, vector,
-                 max_threads=None, parallelizable=True):
-        super().__init__(max_threads=max_threads,
-                         parallelizable=parallelizable)
+
+    def __init__(self, vector, max_threads=None, parallelizable=True):
+        super().__init__(max_threads=max_threads, parallelizable=parallelizable)
 
         self.vector = vector
 
@@ -130,10 +130,17 @@ class center_in_box(TransformationBase):
        The transformation was changed to inherit from the base class for
        limiting threads and checking if it can be used in parallel analysis.
     """
-    def __init__(self, ag, center='geometry', point=None, wrap=False,
-                 max_threads=None, parallelizable=True):
-        super().__init__(max_threads=max_threads,
-                         parallelizable=parallelizable)
+
+    def __init__(
+        self,
+        ag,
+        center="geometry",
+        point=None,
+        wrap=False,
+        max_threads=None,
+        parallelizable=True,
+    ):
+        super().__init__(max_threads=max_threads, parallelizable=parallelizable)
 
         self.ag = ag
         self.center = center
@@ -143,24 +150,21 @@ class center_in_box(TransformationBase):
         pbc_arg = self.wrap
         if self.point:
             self.point = np.asarray(self.point, np.float32)
-            if self.point.shape != (3, ) and self.point.shape != (1, 3):
-                raise ValueError('{} is not a valid point'.format(self.point))
+            if self.point.shape != (3,) and self.point.shape != (1, 3):
+                raise ValueError("{} is not a valid point".format(self.point))
         try:
-            if self.center == 'geometry':
-                self.center_method = partial(self.ag.center_of_geometry,
-                                             wrap=pbc_arg)
-            elif self.center == 'mass':
-                self.center_method = partial(self.ag.center_of_mass,
-                                             wrap=pbc_arg)
+            if self.center == "geometry":
+                self.center_method = partial(self.ag.center_of_geometry, wrap=pbc_arg)
+            elif self.center == "mass":
+                self.center_method = partial(self.ag.center_of_mass, wrap=pbc_arg)
             else:
-                raise ValueError(f'{self.center} is valid for center')
+                raise ValueError(f"{self.center} is valid for center")
         except AttributeError:
-            if self.center == 'mass':
-                errmsg = f'{self.ag} is not an AtomGroup object with masses'
+            if self.center == "mass":
+                errmsg = f"{self.ag} is not an AtomGroup object with masses"
                 raise AttributeError(errmsg) from None
             else:
-                raise ValueError(f'{self.ag} is not an AtomGroup object') \
-                                 from None
+                raise ValueError(f"{self.ag} is not an AtomGroup object") from None
 
     def _transform(self, ts):
         if self.point is None:

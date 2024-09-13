@@ -1,5 +1,5 @@
 # -*- Mode: python; tab-width: 4; indent-tabs-mode:nil; coding:utf-8 -*-
-# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4 
+# vim: tabstop=4 expandtab shiftwidth=4 softtabstop=4
 #
 # MDAnalysis --- https://www.mdanalysis.org
 # Copyright (c) 2006-2017 The MDAnalysis Development Team and contributors
@@ -39,13 +39,14 @@ The selection is named *mdanalysis001*.
 .. _CHARMM: http://www.charmm.org
 .. _CHARMM selection: http://www.charmm.org/documentation/c34b1/select.html
 """
+
 from . import base
 
 
 class SelectionWriter(base.SelectionWriterBase):
     format = ["CHARMM", "str"]
     ext = "str"
-    continuation = '-'
+    continuation = "-"
     commentfmt = "! %s"
     default_numterms = 4  # be conservative because CHARMM only reads 72 columns
 
@@ -54,11 +55,11 @@ class SelectionWriter(base.SelectionWriterBase):
         def _index(atom):
             return "BYNUM {0:d}".format((atom.index + 1))
 
-        return base.join(atoms, ' .or.', _index)
+        return base.join(atoms, " .or.", _index)
 
     def _write_head(self, out, **kwargs):
         out.write(self.comment("MDAnalysis CHARMM selection"))
-        out.write("DEFINE {name!s} SELECT ".format(**kwargs) + self.continuation + '\n')
+        out.write("DEFINE {name!s} SELECT ".format(**kwargs) + self.continuation + "\n")
 
     def _write_tail(self, out, **kwargs):
         out.write("END")

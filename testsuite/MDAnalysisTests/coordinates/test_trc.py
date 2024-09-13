@@ -95,9 +95,9 @@ class TestTRCReaderVacuumBox:
         trc.rewind()
         assert trc.ts.frame == 0, "trajectory.rewind() failed to rewind to first frame"
 
-        assert np.any(TRC_U.atoms.positions != 0), (
-            "The atom positions are not populated"
-        )
+        assert np.any(
+            TRC_U.atoms.positions != 0
+        ), "The atom positions are not populated"
 
     def test_random_access(self, TRC_U):
         TRC_U.trajectory[0]
@@ -216,9 +216,7 @@ class TestTRCReaderTruncOctBox:
 
 class TestTRCGenboxOrigin:
     def test_universe(self):
-        with pytest.raises(
-            ValueError, match="doesnt't support a shifted origin!"
-        ):
+        with pytest.raises(ValueError, match="doesnt't support a shifted origin!"):
             mda.Universe(TRC_PDB_VAC, TRC_GENBOX_ORIGIN)
 
 

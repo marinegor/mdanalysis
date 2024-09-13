@@ -90,6 +90,7 @@ especially as we are directly using this framework (imported from numpy).
 .. _Gromacs: http://www.gromacs.org
 
 """
+
 import logging
 
 import pytest
@@ -114,7 +115,7 @@ import sys
 # collection of citations on the first `import MDAnalysis` so the environment
 # variable *must* come before MDAnalysis is imported the first time. See
 # issue #412 https://github.com/MDAnalysis/mdanalysis/issues/412 and PR #1822.
-os.environ['DUECREDIT_ENABLE'] = 'yes'
+os.environ["DUECREDIT_ENABLE"] = "yes"
 
 # Any tests that plot with matplotlib need to run with the simple agg backend
 # because on Travis there is no DISPLAY set.
@@ -123,13 +124,13 @@ os.environ['DUECREDIT_ENABLE'] = 'yes'
 # See https://matplotlib.org/3.2.1/tutorials/introductory/usage.html#backends
 
 from MDAnalysisTests.util import (
-    block_import,
-    executable_not_found,
-    no_deprecated_call,
-    in_dir,
-    assert_nowarns,
+    block_import as block_import,
+    executable_not_found as executable_not_found,
+    no_deprecated_call as no_deprecated_call,
+    in_dir as in_dir,
+    assert_nowarns as assert_nowarns,
 )
-from MDAnalysisTests.dummy import make_Universe
+from MDAnalysisTests.dummy import make_Universe as make_Universe
 
 
 def run(*args, **kwargs):

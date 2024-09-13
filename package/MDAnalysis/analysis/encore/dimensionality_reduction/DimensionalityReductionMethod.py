@@ -33,7 +33,7 @@ while others are available only if scikit-learn is installed
 .. versionadded:: 0.16.0
 
 """
-import logging
+
 import warnings
 
 # Import native affinity propagation implementation
@@ -45,18 +45,22 @@ try:
 except ImportError:
     sklearn = None
     import warnings
-    warnings.warn("sklearn.decomposition could not be imported: some "
-                  "functionality will not be available in "
-                  "encore.dimensionality_reduction()", category=ImportWarning)
+
+    warnings.warn(
+        "sklearn.decomposition could not be imported: some "
+        "functionality will not be available in "
+        "encore.dimensionality_reduction()",
+        category=ImportWarning,
+    )
 
 
-class DimensionalityReductionMethod (object):
+class DimensionalityReductionMethod(object):
     """
     Base class for any Dimensionality Reduction Method
     """
 
     # Whether the method accepts a distance matrix
-    accepts_distance_matrix=True
+    accepts_distance_matrix = True
 
     def __call__(self, x):
         """
@@ -75,21 +79,25 @@ class DimensionalityReductionMethod (object):
             coordinates in reduced space
 
         """
-        raise NotImplementedError("Class {0} doesn't implement __call__()"
-                                  .format(self.__class__.__name__))
+        raise NotImplementedError(
+            "Class {0} doesn't implement __call__()".format(self.__class__.__name__)
+        )
 
 
 class StochasticProximityEmbeddingNative(DimensionalityReductionMethod):
     """
     Interface to the natively implemented Affinity propagation procedure.
     """
-    def __init__(self,
-                 dimension = 2,
-                 distance_cutoff = 1.5,
-                 min_lam = 0.1,
-                 max_lam = 2.0,
-                 ncycle = 100,
-                 nstep = 10000,):
+
+    def __init__(
+        self,
+        dimension=2,
+        distance_cutoff=1.5,
+        min_lam=0.1,
+        max_lam=2.0,
+        ncycle=100,
+        nstep=10000,
+    ):
         """
         Parameters
         ----------
@@ -135,19 +143,17 @@ class StochasticProximityEmbeddingNative(DimensionalityReductionMethod):
             coordinates in reduced space
 
         """
-        final_stress, coordinates = \
-            stochasticproxembed.StochasticProximityEmbedding(
+        final_stress, coordinates = stochasticproxembed.StochasticProximityEmbedding(
             s=distance_matrix,
             rco=self.distance_cutoff,
             dim=self.dimension,
-            minlam = self.min_lam,
-            maxlam = self.max_lam,
-            ncycle = self.ncycle,
-            nstep = self.nstep,
-            stressfreq = self.stressfreq
+            minlam=self.min_lam,
+            maxlam=self.max_lam,
+            ncycle=self.ncycle,
+            nstep=self.nstep,
+            stressfreq=self.stressfreq,
         )
         return coordinates, {"final_stress": final_stress}
-
 
 
 if sklearn:
@@ -161,9 +167,7 @@ if sklearn:
         # Whether the method accepts a distance matrix
         accepts_distance_matrix = False
 
-        def __init__(self,
-                     dimension = 2,
-                     **kwargs):
+        def __init__(self, dimension=2, **kwargs):
             """
             Parameters
             ----------
@@ -172,8 +176,7 @@ if sklearn:
                 Number of dimensions to which the conformational space will be
                 reduced to (default is 3).
             """
-            self.pca = sklearn.decomposition.PCA(n_components=dimension,
-                                                 **kwargs)
+            self.pca = sklearn.decomposition.PCA(n_components=dimension, **kwargs)
 
         def __call__(self, coordinates):
             """

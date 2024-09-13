@@ -9,9 +9,9 @@ from MDAnalysisTests import datafiles as data
 
 @pytest.fixture()
 def nojump_universes_fromfile():
-    '''
+    """
     Create the universe objects for the tests.
-    '''
+    """
     u = mda.Universe(data.PSF_TRICLINIC, data.DCD_TRICLINIC)
     transformation = NoJump()
     u.trajectory.add_transformations(transformation)
@@ -113,12 +113,14 @@ def nojump_universe_npt_2nd_frame_from_file(tmp_path_factory):
     coordinates[2] = [2.5, 50.0, 50.0]
     coordinates[3] = [2.5, 50.0, 50.0]
     u.load_new(coordinates, order="fac")
-    dim = np.asarray([
-        [100, 100, 100, 90, 90, 90],
-        [95, 100, 100, 90, 90, 90],  # Box shrinks by 5 in the x-dimension
-        [95, 100, 100, 90, 90, 90],
-        [95, 100, 100, 90, 90, 90],
-    ])
+    dim = np.asarray(
+        [
+            [100, 100, 100, 90, 90, 90],
+            [95, 100, 100, 90, 90, 90],  # Box shrinks by 5 in the x-dimension
+            [95, 100, 100, 90, 90, 90],
+            [95, 100, 100, 90, 90, 90],
+        ]
+    )
     workflow = [
         mda.transformations.boxdimensions.set_dimensions(dim),
     ]
@@ -173,13 +175,15 @@ def test_nojump_nonorthogonal_fwd(nojump_universe):
     )
     assert_allclose(
         transformed_coordinates[1::3],
-        np.outer(np.arange(32.5), np.array([0.5, 1, np.sqrt(3) / 2])) + 1 * np.ones(3) / 3,
-        rtol=1.2e-7
+        np.outer(np.arange(32.5), np.array([0.5, 1, np.sqrt(3) / 2]))
+        + 1 * np.ones(3) / 3,
+        rtol=1.2e-7,
     )
     assert_allclose(
         transformed_coordinates[2::3],
-        np.outer(np.arange(32.5), np.array([0.5, 1, np.sqrt(3) / 2])) + 2 * np.ones(3) / 3,
-        rtol=1.2e-7
+        np.outer(np.arange(32.5), np.array([0.5, 1, np.sqrt(3) / 2]))
+        + 2 * np.ones(3) / 3,
+        rtol=1.2e-7,
     )
 
 
@@ -189,7 +193,7 @@ def test_nojump_constantvel(nojump_constantvel_universe):
     values when iterating forwards over the sample trajectory.
     """
     ref = nojump_constantvel_universe
-    towrap = ref.copy() # This copy of the universe will be wrapped, then unwrapped,
+    towrap = ref.copy()  # This copy of the universe will be wrapped, then unwrapped,
     # and should be equal to ref.
     dim = np.asarray([5, 5, 5, 54, 60, 90], np.float32)
     workflow = [
@@ -225,12 +229,14 @@ def test_nojump_2nd_frame(nojump_universe_npt_2nd_frame):
     unwrapped = [97.5, 50.0, 50.0]
     """
     u = nojump_universe_npt_2nd_frame
-    dim = np.asarray([
-        [100, 100, 100, 90, 90, 90],
-        [95, 100, 100, 90, 90, 90],  # Box shrinks by 5 in the x-dimension
-        [95, 100, 100, 90, 90, 90],
-        [95, 100, 100, 90, 90, 90],
-    ])
+    dim = np.asarray(
+        [
+            [100, 100, 100, 90, 90, 90],
+            [95, 100, 100, 90, 90, 90],  # Box shrinks by 5 in the x-dimension
+            [95, 100, 100, 90, 90, 90],
+            [95, 100, 100, 90, 90, 90],
+        ]
+    )
     workflow = [
         mda.transformations.boxdimensions.set_dimensions(dim),
         NoJump(),
@@ -259,12 +265,14 @@ def test_nojump_3rd_frame(nojump_universe_npt_3rd_frame):
     unwrapped = [97.5, 50.0, 50.0]
     """
     u = nojump_universe_npt_3rd_frame
-    dim = np.asarray([
-        [100, 100, 100, 90, 90, 90],
-        [100, 100, 100, 90, 90, 90],
-        [95, 100, 100, 90, 90, 90],  # Box shrinks by 5 in the x-dimension
-        [95, 100, 100, 90, 90, 90],
-    ])
+    dim = np.asarray(
+        [
+            [100, 100, 100, 90, 90, 90],
+            [100, 100, 100, 90, 90, 90],
+            [95, 100, 100, 90, 90, 90],  # Box shrinks by 5 in the x-dimension
+            [95, 100, 100, 90, 90, 90],
+        ]
+    )
     workflow = [
         mda.transformations.boxdimensions.set_dimensions(dim),
         NoJump(),
@@ -293,7 +301,7 @@ def test_nojump_constantvel_skip(nojump_universes_fromfile):
     with pytest.warns(UserWarning):
         u = nojump_universes_fromfile
         u.trajectory[0]
-        u.trajectory[9] #Exercises the warning.
+        u.trajectory[9]  # Exercises the warning.
 
 
 def test_nojump_constantvel_stride_2(nojump_universes_fromfile):
@@ -351,6 +359,6 @@ def test_notinvertible(nojump_universe):
     with pytest.raises(mda.exceptions.NoDataError):
         u = nojump_universe
         dim = [1, 0, 0, 90, 90, 90]
-        workflow = [mda.transformations.boxdimensions.set_dimensions(dim),NoJump()]
+        workflow = [mda.transformations.boxdimensions.set_dimensions(dim), NoJump()]
         u.trajectory.add_transformations(*workflow)
         transformed_coordinates = u.trajectory.timeseries()[0]

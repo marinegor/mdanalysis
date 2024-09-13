@@ -305,10 +305,31 @@ to the second atom.
 
 """
 
-__all__ = ['core', 'PSFParser', 'PDBParser', 'PQRParser', 'GROParser',
-           'CRDParser', 'TOPParser', 'PDBQTParser', 'TPRParser',
-           'LAMMPSParser', 'XYZParser', 'GMSParser', 'DLPolyParser',
-           'HoomdXMLParser','GSDParser', 'ITPParser']
+__all__ = [
+    "core",
+    "PSFParser",
+    "PDBParser",
+    "PQRParser",
+    "GROParser",
+    "CRDParser",
+    "TOPParser",
+    "PDBQTParser",
+    "TPRParser",
+    "LAMMPSParser",
+    "XYZParser",
+    "GMSParser",
+    "DLPolyParser",
+    "HoomdXMLParser",
+    "GSDParser",
+    "ITPParser",
+    "ExtendedPDBParser",
+    "DMSParser",
+    "MOL2Parser",
+    "TXYZParser",
+    "MMTFParser",
+    "MinimalParser",
+    "FHIAIMSParser",
+]
 
 from . import core
 from . import PSFParser

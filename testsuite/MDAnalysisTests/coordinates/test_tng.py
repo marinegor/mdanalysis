@@ -123,7 +123,6 @@ def test_tng_traj_uneven_blocks():
 @pytest.mark.filterwarnings("ignore:Failed read for block")
 @pytest.mark.skipif(not HAS_PYTNG, reason="pytng not installed")
 class TestTNGTraj(object):
-
     _n_atoms = 1000
     _n_frames = 101
     _stride = 5000
@@ -301,9 +300,7 @@ class TestTNGTraj(object):
 
     def test_box_last_frame(self, universe):
         dims = universe.trajectory[100].dimensions
-        assert_allclose(
-            dims, triclinic_box(*self._box_frame_100), rtol=10**-self.prec
-        )
+        assert_allclose(dims, triclinic_box(*self._box_frame_100), rtol=10**-self.prec)
 
     @pytest.mark.parametrize("frame", [0, 20, 50, 100])
     def test_step(self, universe, frame):
@@ -350,7 +347,6 @@ class TestTNGTraj(object):
 @pytest.mark.filterwarnings("ignore:Off stride read for block")
 @pytest.mark.skipif(not HAS_PYTNG, reason="pytng not installed")
 class TestTNGTraj_vels_forces(object):
-
     _n_atoms = 1000
     _n_frames = 51
     _stride = 10

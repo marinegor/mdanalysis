@@ -47,13 +47,14 @@ In the VMD_ GUI the macro "mdanalysis001" appears in the
    :inherited-members:
 
 """
+
 from . import base
 
 
 class SelectionWriter(base.SelectionWriterBase):
     format = "VMD"
     ext = "vmd"
-    continuation = '\\'
+    continuation = "\\"
     commentfmt = "# %s"
 
     def _write_head(self, out, **kwargs):

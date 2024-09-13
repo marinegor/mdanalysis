@@ -21,11 +21,10 @@
 # J. Comput. Chem. 32 (2011), 2319--2327, doi:10.1002/jcc.21787
 #
 import warnings
-from ..converters.ParmEdParser import ParmEdParser, squash_identical
 
 warnings.warn(
     "This module is deprecated as of MDAnalysis version 2.0.0."
     "It will be removed in MDAnalysis version 3.0.0."
     "Please import the ParmEd classes from MDAnalysis.converters instead.",
-    category=DeprecationWarning
+    category=DeprecationWarning,
 )

@@ -33,6 +33,7 @@ objects) or distance matrices, by resampling with replacement.
 .. versionadded:: 0.16.0
 
 """
+
 import numpy as np
 import logging
 import MDAnalysis as mda
@@ -65,9 +66,13 @@ def bootstrapped_matrix(matrix, ensemble_assignment):
     indexes = []
     for ens in ensemble_identifiers:
         old_indexes = np.where(ensemble_assignment == ens)[0]
-        indexes.append(np.random.randint(low=np.min(old_indexes),
-                                         high=np.max(old_indexes) + 1,
-                                         size=old_indexes.shape[0]))
+        indexes.append(
+            np.random.randint(
+                low=np.min(old_indexes),
+                high=np.max(old_indexes) + 1,
+                size=old_indexes.shape[0],
+            )
+        )
 
     indexes = np.hstack(indexes)
     for j in range(this_m.size):
@@ -78,10 +83,9 @@ def bootstrapped_matrix(matrix, ensemble_assignment):
     return this_m
 
 
-def get_distance_matrix_bootstrap_samples(distance_matrix,
-                                          ensemble_assignment,
-                                          samples=100,
-                                          ncores=1):
+def get_distance_matrix_bootstrap_samples(
+    distance_matrix, ensemble_assignment, samples=100, ncores=1
+):
     """
     Calculates distance matrices corresponding to bootstrapped ensembles, by
     resampling with replacement.
@@ -108,8 +112,7 @@ def get_distance_matrix_bootstrap_samples(distance_matrix,
     confdistmatrix : list of encore.utils.TriangularMatrix
     """
 
-    bs_args = \
-            [([distance_matrix, ensemble_assignment]) for i in range(samples)]
+    bs_args = [([distance_matrix, ensemble_assignment]) for i in range(samples)]
 
     pc = ParallelCalculation(ncores, bootstrapped_matrix, bs_args)
 
@@ -120,8 +123,7 @@ def get_distance_matrix_bootstrap_samples(distance_matrix,
     return bootstrap_matrices
 
 
-def get_ensemble_bootstrap_samples(ensemble,
-                                   samples=100):
+def get_ensemble_bootstrap_samples(ensemble, samples=100):
     """
     Generates a bootstrapped ensemble by resampling with replacement.
 
@@ -147,9 +149,13 @@ def get_ensemble_bootstrap_samples(ensemble,
         indices = np.random.randint(
             low=0,
             high=ensemble.trajectory.timeseries().shape[1],
-            size=ensemble.trajectory.timeseries().shape[1])
+            size=ensemble.trajectory.timeseries().shape[1],
+        )
         ensembles.append(
-            mda.Universe(ensemble.filename,
-                        ensemble.trajectory.timeseries(order='fac')[indices,:,:],
-                         format=mda.coordinates.memory.MemoryReader))
+            mda.Universe(
+                ensemble.filename,
+                ensemble.trajectory.timeseries(order="fac")[indices, :, :],
+                format=mda.coordinates.memory.MemoryReader,
+            )
+        )
     return ensembles

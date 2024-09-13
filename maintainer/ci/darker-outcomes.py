@@ -87,23 +87,21 @@ def get_action_url(repo, pr, run_id, workflow_name, job_name):
     """
     # Accessing get_workflow directly currently fails when passing a name
     # Instead do the roundabout way by getting list of all workflows
-    linters = [wf for wf in repo.get_workflows()
-               if wf.name == workflow_name][0]
+    linters = [wf for wf in repo.get_workflows() if wf.name == workflow_name][0]
 
     # Extract the gh action run
-    run = [r for r in linters.get_runs(branch=pr.head.ref)
-           if r.id == int(run_id)][0]
+    run = [r for r in linters.get_runs(branch=pr.head.ref) if r.id == int(run_id)][0]
 
     # The exact job url can't be recovered via the Python API
     # Switch over to using the REST API instead
     with request.urlopen(run.jobs_url) as url:
         data = json.load(url)
 
-    for job in data['jobs']:
-        if job['name'] == job_name:
-            return job['html_url']
+    for job in data["jobs"]:
+        if job["name"] == job_name:
+            return job["html_url"]
 
-    return 'N/A'
+    return "N/A"
 
 
 def bool_outcome(outcome):
@@ -120,7 +118,7 @@ def bool_outcome(outcome):
     bool
       Whether or not the job step was successful.
     """
-    return True if (outcome == 'success') else False
+    return True if (outcome == "success") else False
 
 
 def gen_message(pr, main_stat, test_stat, action_url):
@@ -152,26 +150,30 @@ def gen_message(pr, main_stat, test_stat, action_url):
         else:
             return "⚠️  Possible failure"
 
-    msg = ('### Linter Bot Results:\n\n'
-           f'Hi @{pr.user.login}! Thanks for making this PR. '
-           'We linted your code and found the following: \n\n')
+    msg = (
+        "### Linter Bot Results:\n\n"
+        f"Hi @{pr.user.login}! Thanks for making this PR. "
+        "We linted your code and found the following: \n\n"
+    )
 
     # If everything is ok
     if bool_outcome(main_stat) and bool_outcome(test_stat):
-        msg += ('There are currently no issues detected! 🎉')
+        msg += "There are currently no issues detected! 🎉"
     else:
-        msg += ('Some issues were found with the formatting of your code.\n'
-                '| Code Location | Outcome |\n'
-                '| --- | --- |\n'
-                f'| main package | {_format_outcome(main_stat)}|\n'
-                f'| testsuite | {_format_outcome(test_stat)}|\n'
-                '\nPlease have a look at the `darker-main-code` and '
-                '`darker-test-code` steps here for more details: '
-                f'{action_url}\n\n'
-                '---\n'
-                '_**Please note:** The `black` linter is purely '
-                'informational, you can safely ignore these outcomes if '
-                'there are no flake8 failures!_')
+        msg += (
+            "Some issues were found with the formatting of your code.\n"
+            "| Code Location | Outcome |\n"
+            "| --- | --- |\n"
+            f"| main package | {_format_outcome(main_stat)}|\n"
+            f"| testsuite | {_format_outcome(test_stat)}|\n"
+            "\nPlease have a look at the `darker-main-code` and "
+            "`darker-test-code` steps here for more details: "
+            f"{action_url}\n\n"
+            "---\n"
+            "_**Please note:** The `black` linter is purely "
+            "informational, you can safely ignore these outcomes if "
+            "there are no flake8 failures!_"
+        )
     return msg
 
 
@@ -206,33 +208,30 @@ def post_comment(pr, message, match_string):
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    git = Github(os.environ['GITHUB_TOKEN'])
+    git = Github(os.environ["GITHUB_TOKEN"])
     repo = git.get_repo("MDAnalysis/mdanalysis")
 
-    with open(args.json, 'r') as f:
+    with open(args.json, "r") as f:
         status = json.load(f)
 
-    run_id = status['RUN_ID']
+    run_id = status["RUN_ID"]
     print(f"debug run_id: {run_id}")
 
     # Get Pull Request
-    pr_num = int(status['PR_NUM'])
+    pr_num = int(status["PR_NUM"])
     print(f"debug pr_num: {pr_num}")
     pr = get_pull_request(repo, pr_num)
 
     # Get the url to the github action job being pointed to
-    action_url = get_action_url(repo, pr, run_id,
-                                workflow_name='linters',
-                                job_name='darker_lint')
+    action_url = get_action_url(
+        repo, pr, run_id, workflow_name="linters", job_name="darker_lint"
+    )
 
     # Get the message you want to post to users
-    with open(args.json, 'r') as f:
+    with open(args.json, "r") as f:
         results_dict = json.load(f)
 
-    message = gen_message(pr,
-                          status['main_stat'],
-                          status['test_stat'],
-                          action_url)
+    message = gen_message(pr, status["main_stat"], status["test_stat"], action_url)
 
     # Post your comment
-    post_comment(pr, message, match_string='Linter Bot Results:')
+    post_comment(pr, message, match_string="Linter Bot Results:")

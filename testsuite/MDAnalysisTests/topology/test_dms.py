@@ -29,10 +29,19 @@ from MDAnalysisTests.datafiles import DMS_DOMAINS, DMS_NO_SEGID
 class TestDMSParser(ParserBase):
     parser = mda.topology.DMSParser.DMSParser
     ref_filename = DMS_DOMAINS
-    expected_attrs = ['ids', 'names', 'bonds', 'charges',
-                      'masses', 'resids', 'resnames', 'segids',
-                      'chainIDs', 'atomnums']
-    guessed_attrs = ['types']
+    expected_attrs = [
+        "ids",
+        "names",
+        "bonds",
+        "charges",
+        "masses",
+        "resids",
+        "resnames",
+        "segids",
+        "chainIDs",
+        "atomnums",
+    ]
+    guessed_attrs = ["types"]
     expected_n_atoms = 3341
     expected_n_residues = 214
     expected_n_segments = 3

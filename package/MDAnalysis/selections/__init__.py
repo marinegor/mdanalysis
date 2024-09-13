@@ -44,16 +44,17 @@ exception of `:func:get_writer`:
 
 .. autofunction:: get_writer
 """
+
 import os.path
 
 from .. import _SELECTION_WRITERS
 
 from . import base
-from . import vmd
-from . import pymol
-from . import gromacs
-from . import charmm
-from . import jmol
+from . import vmd as vmd
+from . import pymol as pymol
+from . import gromacs as gromacs
+from . import charmm as charmm
+from . import jmol as jmol
 
 
 def get_writer(filename: str, defaultformat: str) -> base.SelectionWriterBase:
@@ -84,6 +85,8 @@ def get_writer(filename: str, defaultformat: str) -> base.SelectionWriterBase:
     try:
         return _SELECTION_WRITERS[format]
     except KeyError:
-        errmsg = (f"Writing as {format} is not implemented; only "
-                  f"{ _SELECTION_WRITERS.keys()} will work.")
+        errmsg = (
+            f"Writing as {format} is not implemented; only "
+            f"{ _SELECTION_WRITERS.keys()} will work."
+        )
         raise NotImplementedError(errmsg) from None

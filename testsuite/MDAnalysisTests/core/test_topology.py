@@ -3,6 +3,7 @@
 Should convert between indices (*ix)
 Should work with both a single or an array of indices
 """
+
 import itertools
 from numpy.testing import (
     assert_equal,
@@ -38,30 +39,22 @@ class TestTransTable(object):
 
     def test_a2r(self, tt):
         for aix, rix in zip(
-                [np.array([0, 1, 2]),
-                 np.array([9, 6, 2]),
-                 np.array([3, 3, 3])],
-                [np.array([0, 0, 2]),
-                 np.array([2, 3, 2]),
-                 np.array([2, 2, 2])]
+            [np.array([0, 1, 2]), np.array([9, 6, 2]), np.array([3, 3, 3])],
+            [np.array([0, 0, 2]), np.array([2, 3, 2]), np.array([2, 2, 2])],
         ):
             assert_equal(tt.atoms2residues(aix), rix)
 
     def test_r2a_1d(self, tt):
         for rix, aix in zip(
-                [[0, 1], [1, 1], [3, 1]],
-                [[0, 1, 4, 5, 8], [4, 5, 8, 4, 5, 8], [6, 7, 4, 5, 8]]
+            [[0, 1], [1, 1], [3, 1]],
+            [[0, 1, 4, 5, 8], [4, 5, 8, 4, 5, 8], [6, 7, 4, 5, 8]],
         ):
             assert_equal(tt.residues2atoms_1d(rix), aix)
 
     def test_r2a_2d(self, tt):
         for rix, aix in zip(
-                [[0, 1],
-                 [1, 1],
-                 [3, 1]],
-                [[[0, 1], [4, 5, 8]],
-                 [[4, 5, 8], [4, 5, 8]],
-                 [[6, 7], [4, 5, 8]]]
+            [[0, 1], [1, 1], [3, 1]],
+            [[[0, 1], [4, 5, 8]], [[4, 5, 8], [4, 5, 8]], [[6, 7], [4, 5, 8]]],
         ):
             answer = tt.residues2atoms_2d(rix)
             for a1, a2 in zip(answer, aix):
@@ -69,34 +62,21 @@ class TestTransTable(object):
 
     def test_r2s(self, tt):
         for rix, sidx in zip(
-                [np.array([0, 1]),
-                 np.array([2, 1, 0]),
-                 np.array([1, 1, 1])],
-                [np.array([0, 1]),
-                 np.array([1, 1, 0]),
-                 np.array([1, 1, 1])]
+            [np.array([0, 1]), np.array([2, 1, 0]), np.array([1, 1, 1])],
+            [np.array([0, 1]), np.array([1, 1, 0]), np.array([1, 1, 1])],
         ):
             assert_equal(tt.residues2segments(rix), sidx)
 
     def test_s2r_1d(self, tt):
         for sidx, rix in zip(
-                [[0, 1],
-                 [1, 0],
-                 [1, 1]],
-                [[0, 3, 1, 2],
-                 [1, 2, 0, 3],
-                 [1, 2, 1, 2]]
+            [[0, 1], [1, 0], [1, 1]], [[0, 3, 1, 2], [1, 2, 0, 3], [1, 2, 1, 2]]
         ):
             assert_equal(tt.segments2residues_1d(sidx), rix)
 
     def test_s2r_2d(self, tt):
         for sidx, rix in zip(
-                [[0, 1],
-                 [1, 0],
-                 [1, 1]],
-                [[[0, 3], [1, 2]],
-                 [[1, 2], [0, 3]],
-                 [[1, 2], [1, 2]]]
+            [[0, 1], [1, 0], [1, 1]],
+            [[[0, 3], [1, 2]], [[1, 2], [0, 3]], [[1, 2], [1, 2]]],
         ):
             answer = tt.segments2residues_2d(sidx)
             for a1, a2 in zip(answer, rix):
@@ -104,23 +84,23 @@ class TestTransTable(object):
 
     def test_s2a_1d(self, tt):
         for sidx, aix in zip(
-                [[0, 1],
-                 [1, 0],
-                 [1, 1]],
-                [[0, 1, 6, 7, 4, 5, 8, 2, 3, 9],
-                 [4, 5, 8, 2, 3, 9, 0, 1, 6, 7],
-                 [4, 5, 8, 2, 3, 9, 4, 5, 8, 2, 3, 9]],
+            [[0, 1], [1, 0], [1, 1]],
+            [
+                [0, 1, 6, 7, 4, 5, 8, 2, 3, 9],
+                [4, 5, 8, 2, 3, 9, 0, 1, 6, 7],
+                [4, 5, 8, 2, 3, 9, 4, 5, 8, 2, 3, 9],
+            ],
         ):
             assert_equal(tt.segments2atoms_1d(sidx), aix)
 
     def test_s2a_2d(self, tt):
         for sidx, aix in zip(
-                [[0, 1],
-                 [1, 0],
-                 [1, 1]],
-                [[[0, 1, 6, 7], [4, 5, 8, 2, 3, 9]],
-                 [[4, 5, 8, 2, 3, 9], [0, 1, 6, 7]],
-                 [[4, 5, 8, 2, 3, 9], [4, 5, 8, 2, 3, 9]]],
+            [[0, 1], [1, 0], [1, 1]],
+            [
+                [[0, 1, 6, 7], [4, 5, 8, 2, 3, 9]],
+                [[4, 5, 8, 2, 3, 9], [0, 1, 6, 7]],
+                [[4, 5, 8, 2, 3, 9], [4, 5, 8, 2, 3, 9]],
+            ],
         ):
             answer = tt.segments2atoms_2d(sidx)
             for a1, a2 in zip(answer, aix):
@@ -153,12 +133,19 @@ class TestTransTable(object):
     def test_lazy_building_RA(self, tt):
         assert_equal(tt._RA, None)
         RA = tt.RA
-        assert_rows_match(tt.RA,
-                          np.array([np.array([0, 1]),
-                                    np.array([4, 5, 8]),
-                                    np.array([2, 3, 9]),
-                                    np.array([6, 7]),
-                                    None], dtype=object))
+        assert_rows_match(
+            tt.RA,
+            np.array(
+                [
+                    np.array([0, 1]),
+                    np.array([4, 5, 8]),
+                    np.array([2, 3, 9]),
+                    np.array([6, 7]),
+                    None,
+                ],
+                dtype=object,
+            ),
+        )
 
         tt.move_atom(1, 3)
         assert_equal(tt._RA, None)
@@ -166,10 +153,9 @@ class TestTransTable(object):
     def test_lazy_building_SR(self, tt):
         assert_equal(tt._SR, None)
         SR = tt.SR
-        assert_rows_match(tt.SR,
-                          np.array([np.array([0, 3]),
-                                    np.array([1, 2]),
-                                    None], dtype=object))
+        assert_rows_match(
+            tt.SR, np.array([np.array([0, 3]), np.array([1, 2]), None], dtype=object)
+        )
 
         tt.move_residue(1, 0)
         assert_equal(tt._SR, None)
@@ -187,18 +173,18 @@ class TestTransTable(object):
 class TestLevelMoves(object):
     """Tests for moving atoms/residues between residues/segments
 
-    
+
     Atoms can move between residues by setting .residue with a Residue
     Residues can move between segments by setting .segment with a Segment
 
     Moves are performed by setting either [res/seg]indices or [res/seg]ids
 
-    
+
     """
 
     @pytest.fixture()
     def u(self):
-        return make_Universe(('resids', 'resnames', 'segids'))
+        return make_Universe(("resids", "resnames", "segids"))
 
     @staticmethod
     def assert_atoms_match_residue(atom, residue):
@@ -219,14 +205,14 @@ class TestLevelMoves(object):
         dest = u.residues[4]
 
         assert at in source.atoms
-        assert not at in dest.atoms
+        assert at not in dest.atoms
         self.assert_atoms_match_residue(at, source)
         assert_equal(len(source.atoms), 5)
         assert_equal(len(dest.atoms), 5)
 
         at.residue = dest
 
-        assert not at in source.atoms
+        assert at not in source.atoms
         assert at in dest.atoms
         self.assert_atoms_match_residue(at, dest)
         assert_equal(len(source.atoms), 4)
@@ -240,7 +226,7 @@ class TestLevelMoves(object):
 
         for at in ag:
             assert at in source.atoms
-            assert not at in dest.atoms
+            assert at not in dest.atoms
         self.assert_atoms_match_residue(ag, source)
         assert_equal(len(source.atoms), 5)
         assert_equal(len(dest.atoms), 5)
@@ -248,7 +234,7 @@ class TestLevelMoves(object):
         ag.residues = dest
 
         for at in ag:
-            assert not at in source.atoms
+            assert at not in source.atoms
             assert at in dest.atoms
         self.assert_atoms_match_residue(ag, dest)
         assert_equal(len(source.atoms), 3)
@@ -262,7 +248,7 @@ class TestLevelMoves(object):
 
         for at in ag:
             assert at in source.atoms
-            assert not at in dest.atoms
+            assert at not in dest.atoms
         self.assert_atoms_match_residue(ag, source)
         assert_equal(len(source.atoms), 5)
         assert_equal(len(dest[0].atoms), 5)
@@ -271,7 +257,7 @@ class TestLevelMoves(object):
         ag.residues = dest
 
         for at in ag:
-            assert not at in source.atoms
+            assert at not in source.atoms
             assert at in dest.atoms
         self.assert_atoms_match_residue(ag, dest)
         assert_equal(len(source.atoms), 3)
@@ -286,7 +272,7 @@ class TestLevelMoves(object):
 
         for at, d in zip(ag, dest):
             assert at in source.atoms
-            assert not at in d.atoms
+            assert at not in d.atoms
         self.assert_atoms_match_residue(ag, source)
         assert_equal(len(source.atoms), 5)
         assert_equal(len(dest[0].atoms), 5)
@@ -295,7 +281,7 @@ class TestLevelMoves(object):
         ag.residues = dest
 
         for at, d in zip(ag, dest):
-            assert not at in source.atoms
+            assert at not in source.atoms
             assert at in d.atoms
         self.assert_atoms_match_residue(ag, dest)
         assert_equal(len(source.atoms), 3)
@@ -305,48 +291,48 @@ class TestLevelMoves(object):
     # Wrong size argument for these operations
     def test_move_atom_residuegroup_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.atoms[0], 'residue', u.atoms[1:3])
+            setattr(u.atoms[0], "residue", u.atoms[1:3])
 
     def test_move_atom_residue_list_TE(self, u):
         dest = [u.residues[1], u.residues[3]]
         with pytest.raises(TypeError):
-            setattr(u.atoms[0], 'residue', dest)
+            setattr(u.atoms[0], "residue", dest)
 
     def test_move_atomgroup_residuegroup_VE(self, u):
         ag = u.atoms[:2]
         dest = u.residues[5:10]
 
         with pytest.raises(ValueError):
-            setattr(ag, 'residues', dest)
+            setattr(ag, "residues", dest)
 
     def test_move_atomgroup_residue_list_VE(self, u):
         ag = u.atoms[:2]
         dest = [u.residues[0], u.residues[10], u.residues[15]]
 
         with pytest.raises(ValueError):
-            setattr(ag, 'residues', dest)
+            setattr(ag, "residues", dest)
 
     # Setting to non-Residue/ResidueGroup raises TE
     def test_move_atom_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.atoms[0], 'residue', 14)
+            setattr(u.atoms[0], "residue", 14)
 
     def test_move_atomgroup_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.atoms[:5], 'residues', 15)
+            setattr(u.atoms[:5], "residues", 15)
 
     def test_move_atomgroup_list_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.atoms[:5], 'residues', [14, 12])
+            setattr(u.atoms[:5], "residues", [14, 12])
 
     # Test illegal moves - Atom.segment can't be changed
     def test_move_atom_segment_NIE(self, u):
         with pytest.raises(NotImplementedError):
-            setattr(u.atoms[0], 'segment', u.segments[1])
+            setattr(u.atoms[0], "segment", u.segments[1])
 
     def test_move_atomgroup_segment_NIE(self, u):
         with pytest.raises(NotImplementedError):
-            setattr(u.atoms[:3], 'segments', u.segments[1])
+            setattr(u.atoms[:3], "segments", u.segments[1])
 
     @staticmethod
     def assert_residue_matches_segment(res, seg):
@@ -364,14 +350,14 @@ class TestLevelMoves(object):
         dest = u.segments[2]
 
         assert res in source.residues
-        assert not res in dest.residues
+        assert res not in dest.residues
         self.assert_residue_matches_segment(res, source)
         assert_equal(len(source.residues), 5)
         assert_equal(len(dest.residues), 5)
 
         res.segment = dest
 
-        assert not res in source.residues
+        assert res not in source.residues
         assert res in dest.residues
         self.assert_residue_matches_segment(res, dest)
         assert_equal(len(source.residues), 4)
@@ -384,7 +370,7 @@ class TestLevelMoves(object):
 
         for r in res:
             assert r in source.residues
-            assert not r in dest.residues
+            assert r not in dest.residues
         self.assert_residue_matches_segment(res, source)
         assert_equal(len(source.residues), 5)
         assert_equal(len(dest.residues), 5)
@@ -392,7 +378,7 @@ class TestLevelMoves(object):
         res.segments = dest
 
         for r in res:
-            assert not r in source.residues
+            assert r not in source.residues
             assert r in dest.residues
         self.assert_residue_matches_segment(res, dest)
         assert_equal(len(source.residues), 3)
@@ -405,7 +391,7 @@ class TestLevelMoves(object):
 
         for r in res:
             assert r in source.residues
-            assert not r in dest.residues
+            assert r not in dest.residues
         self.assert_residue_matches_segment(res, source)
         assert_equal(len(source.residues), 5)
         assert_equal(len(dest[0].residues), 5)
@@ -414,7 +400,7 @@ class TestLevelMoves(object):
         res.segments = dest
 
         for r in res:
-            assert not r in source.residues
+            assert r not in source.residues
             assert r in dest.residues
         self.assert_residue_matches_segment(res, dest)
         assert_equal(len(source.residues), 3)
@@ -428,7 +414,7 @@ class TestLevelMoves(object):
 
         for r, d in zip(res, dest):
             assert r in source.residues
-            assert not r in d.residues
+            assert r not in d.residues
         self.assert_residue_matches_segment(res, source)
         assert_equal(len(source.residues), 5)
         assert_equal(len(dest[0].residues), 5)
@@ -437,7 +423,7 @@ class TestLevelMoves(object):
         res.segments = dest
 
         for r, d in zip(res, dest):
-            assert not r in source.residues
+            assert r not in source.residues
             assert r in d.residues
         self.assert_residue_matches_segment(res, dest)
         assert_equal(len(source.residues), 3)
@@ -446,38 +432,38 @@ class TestLevelMoves(object):
 
     def test_move_residue_segmentgroup_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.residues[0], 'segment', u.segments[:4])
+            setattr(u.residues[0], "segment", u.segments[:4])
 
     def test_move_residue_list_TE(self, u):
         dest = [u.segments[3], u.segments[4]]
         with pytest.raises(TypeError):
-            setattr(u.residues[0], 'segment', dest)
+            setattr(u.residues[0], "segment", dest)
 
     def test_move_residuegroup_segmentgroup_VE(self, u):
         rg = u.residues[:3]
         sg = u.segments[1:]
 
         with pytest.raises(ValueError):
-            setattr(rg, 'segments', sg)
+            setattr(rg, "segments", sg)
 
     def test_move_residuegroup_list_VE(self, u):
         rg = u.residues[:2]
         sg = [u.segments[1], u.segments[2], u.segments[3]]
 
         with pytest.raises(ValueError):
-            setattr(rg, 'segments', sg)
+            setattr(rg, "segments", sg)
 
     def test_move_residue_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.residues[0], 'segment', 1)
+            setattr(u.residues[0], "segment", 1)
 
     def test_move_residuegroup_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.residues[:3], 'segments', 4)
+            setattr(u.residues[:3], "segments", 4)
 
     def test_move_residuegroup_list_TE(self, u):
         with pytest.raises(TypeError):
-            setattr(u.residues[:3], 'segments', [1, 2, 3])
+            setattr(u.residues[:3], "segments", [1, 2, 3])
 
 
 class TestDownshiftArrays(object):
@@ -503,8 +489,7 @@ class TestDownshiftArrays(object):
 
     @pytest.fixture()
     def ragged_result(self):
-        return np.array([[0, 4, 7], [1, 5, 8], [2, 3, 6, 9]],
-                        dtype=object)
+        return np.array([[0, 4, 7], [1, 5, 8], [2, 3, 6, 9]], dtype=object)
 
     # The array as a whole must be dtype object
     # While the subarrays must be integers
@@ -539,53 +524,87 @@ class TestDownshiftArrays(object):
         assert_rows_match(out, ragged_result)
 
     def test_missing_intra_values(self):
-        out = make_downshift_arrays(
-            np.array([0, 0, 2, 2, 3, 3]), 4)
-        assert_rows_match(out,
-                               np.array([np.array([0, 1]),
-                                         np.array([], dtype=int),
-                                         np.array([2, 3]),
-                                         np.array([4, 5]),
-                                         None], dtype=object))
+        out = make_downshift_arrays(np.array([0, 0, 2, 2, 3, 3]), 4)
+        assert_rows_match(
+            out,
+            np.array(
+                [
+                    np.array([0, 1]),
+                    np.array([], dtype=int),
+                    np.array([2, 3]),
+                    np.array([4, 5]),
+                    None,
+                ],
+                dtype=object,
+            ),
+        )
 
     def test_missing_intra_values_2(self):
-        out = make_downshift_arrays(
-            np.array([0, 0, 3, 3, 4, 4]), 5)
-        assert_rows_match(out,
-                               np.array([np.array([0, 1]),
-                                         np.array([], dtype=int),
-                                         np.array([], dtype=int),
-                                         np.array([2, 3]),
-                                         np.array([4, 5]),
-                                         None], dtype=object))
+        out = make_downshift_arrays(np.array([0, 0, 3, 3, 4, 4]), 5)
+        assert_rows_match(
+            out,
+            np.array(
+                [
+                    np.array([0, 1]),
+                    np.array([], dtype=int),
+                    np.array([], dtype=int),
+                    np.array([2, 3]),
+                    np.array([4, 5]),
+                    None,
+                ],
+                dtype=object,
+            ),
+        )
 
     def test_missing_end_values(self):
         out = make_downshift_arrays(np.array([0, 0, 1, 1, 2, 2]), 4)
-        assert_rows_match(out,
-                               np.array([np.array([0, 1]),
-                                         np.array([2, 3]),
-                                         np.array([4, 5]),
-                                         np.array([], dtype=int),
-                                         None], dtype=object))
+        assert_rows_match(
+            out,
+            np.array(
+                [
+                    np.array([0, 1]),
+                    np.array([2, 3]),
+                    np.array([4, 5]),
+                    np.array([], dtype=int),
+                    None,
+                ],
+                dtype=object,
+            ),
+        )
 
     def test_missing_end_values_2(self):
         out = make_downshift_arrays(np.array([0, 0, 1, 1, 2, 2]), 6)
-        assert_rows_match(out,
-                               np.array([np.array([0, 1]),
-                                         np.array([2, 3]),
-                                         np.array([4, 5]),
-                                         np.array([], dtype=int),
-                                         np.array([], dtype=int),
-                                         None], dtype=object))
+        assert_rows_match(
+            out,
+            np.array(
+                [
+                    np.array([0, 1]),
+                    np.array([2, 3]),
+                    np.array([4, 5]),
+                    np.array([], dtype=int),
+                    np.array([], dtype=int),
+                    None,
+                ],
+                dtype=object,
+            ),
+        )
 
     def test_missing_start_values_2(self):
         out = make_downshift_arrays(np.array([1, 1, 2, 2, 3, 3]), 4)
-        assert_rows_match(out,
-                          np.array([np.array([], dtype=int),
-                                    np.array([0, 1]),
-                                    np.array([2, 3]),
-                                    np.array([4, 5]),
-                                    None], dtype=object))
+        assert_rows_match(
+            out,
+            np.array(
+                [
+                    np.array([], dtype=int),
+                    np.array([0, 1]),
+                    np.array([2, 3]),
+                    np.array([4, 5]),
+                    None,
+                ],
+                dtype=object,
+            ),
+        )
+
 
 class TestAddingResidues(object):
     """Tests for adding residues and segments to a Universe
@@ -635,74 +654,73 @@ class TestAddingResidues(object):
             u.add_Residue()
 
     def test_add_Residue_missing_attr_NDE(self):
-        u = make_Universe(('resids',))
+        u = make_Universe(("resids",))
 
         with pytest.raises(NoDataError):
             u.add_Residue(segment=u.segments[0])
 
     def test_add_Residue_NDE_message(self):
         # check error message asks for missing attr
-        u = make_Universe(('resnames', 'resids'))
+        u = make_Universe(("resnames", "resids"))
 
         try:
             u.add_Residue(segment=u.segments[0], resid=42)
         except NoDataError as e:
-            assert 'resname' in str(e)
+            assert "resname" in str(e)
         else:
             raise AssertionError
 
     def test_add_Residue_NDE_message_2(self):
         # multiple missing attrs, check all get mentioned in error
-        u = make_Universe(('resnames', 'resids'))
+        u = make_Universe(("resnames", "resids"))
 
         try:
             u.add_Residue(segment=u.segments[0])
         except NoDataError as e:
-            assert 'resname' in str(e)
-            assert 'resid' in str(e)
+            assert "resname" in str(e)
+            assert "resid" in str(e)
         else:
             raise AssertionError
 
     def test_add_Residue_with_attrs(self):
-        u = make_Universe(('resnames', 'resids'))
+        u = make_Universe(("resnames", "resids"))
 
-        r_new = u.add_Residue(segment=u.segments[0], resid=4321, resname='New')
+        r_new = u.add_Residue(segment=u.segments[0], resid=4321, resname="New")
 
         assert r_new.resid == 4321
-        assert r_new.resname == 'New'
+        assert r_new.resname == "New"
 
     def test_missing_attr_NDE_Segment(self):
-        u = make_Universe(('segids',))
+        u = make_Universe(("segids",))
         with pytest.raises(NoDataError):
             u.add_Segment()
 
     def test_add_Segment_NDE_message(self):
-        u = make_Universe(('segids',))
+        u = make_Universe(("segids",))
 
         try:
             u.add_Segment()
         except NoDataError as e:
-            assert 'segid' in str(e)
+            assert "segid" in str(e)
         else:
             raise AssertionError
 
     def test_add_Segment_with_attr(self):
-        u = make_Universe(('segids',))
+        u = make_Universe(("segids",))
 
-        new_seg = u.add_Segment(segid='New')
+        new_seg = u.add_Segment(segid="New")
 
-        assert new_seg.segid == 'New'
+        assert new_seg.segid == "New"
 
 
 class TestTopologyGuessed(object):
     @pytest.fixture()
     def names(self):
-        return ta.Atomnames(np.array(['A', 'B', 'C'], dtype=object))
+        return ta.Atomnames(np.array(["A", "B", "C"], dtype=object))
 
     @pytest.fixture()
     def types(self):
-        return ta.Atomtypes(np.array(['X', 'Y', 'Z'], dtype=object),
-                            guessed=True)
+        return ta.Atomtypes(np.array(["X", "Y", "Z"], dtype=object), guessed=True)
 
     @pytest.fixture()
     def resids(self):
@@ -710,8 +728,7 @@ class TestTopologyGuessed(object):
 
     @pytest.fixture()
     def resnames(self):
-        return ta.Resnames(np.array(['ABC'], dtype=object),
-                           guessed=True)
+        return ta.Resnames(np.array(["ABC"], dtype=object), guessed=True)
 
     @pytest.fixture()
     def bonds(self):
@@ -719,16 +736,17 @@ class TestTopologyGuessed(object):
 
     @pytest.fixture()
     def top(self, names, types, resids, resnames, bonds):
-        return Topology(n_atoms=3, n_res=1,
-                        attrs=[names, types, resids, resnames, bonds])
+        return Topology(
+            n_atoms=3, n_res=1, attrs=[names, types, resids, resnames, bonds]
+        )
 
     def test_guessed(self, names, types, resids, resnames, bonds, top):
         guessed = top.guessed_attributes
 
         assert types in guessed
         assert resnames in guessed
-        assert not names in guessed
-        assert not resids in guessed
+        assert names not in guessed
+        assert resids not in guessed
         assert bonds not in guessed
 
     def test_read(self, names, types, resids, resnames, bonds, top):
@@ -736,15 +754,16 @@ class TestTopologyGuessed(object):
         assert names in read
         assert resids in read
         assert bonds in read
-        assert not types in read
-        assert not resnames in read
+        assert types not in read
+        assert resnames not in read
+
 
 class TestTopologyCreation(object):
     def test_make_topology_no_attrs(self):
         # should still make attrs list when attrs=None
         top = Topology()
 
-        assert hasattr(top, 'attrs')
+        assert hasattr(top, "attrs")
         assert isinstance(top.attrs, list)
 
     def test_resindex_VE(self):
@@ -758,5 +777,4 @@ class TestTopologyCreation(object):
         AR = np.arange(5)
         RS = np.arange(10)
         with pytest.raises(ValueError):
-            Topology(n_atoms=5, n_res=5, atom_resindex=AR,
-                     residue_segindex=RS)
+            Topology(n_atoms=5, n_res=5, atom_resindex=AR, residue_segindex=RS)
