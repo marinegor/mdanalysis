@@ -326,9 +326,9 @@ class AnalysisBase(object):
         self._verbose = verbose
         self.results = Results()
 
-    def _define_run_frames(self, trajectory,
-                           start=None, stop=None, step=None, frames=None
-                           ) -> Union[slice, np.ndarray]:
+    def _define_run_frames(
+        self, trajectory, start=None, stop=None, step=None, frames=None
+    ) -> Union[slice, np.ndarray]:
         """Defines limits for the whole run, as passed by self.run() arguments
 
         Parameters
@@ -478,9 +478,9 @@ class AnalysisBase(object):
         """
         pass  # pylint: disable=unnecessary-pass
 
-    def _compute(self, indexed_frames: np.ndarray,
-                 verbose: bool = None,
-                 *, progressbar_kwargs={}) -> "AnalysisBase":
+    def _compute(
+        self, indexed_frames: np.ndarray, verbose: bool = None, *, progressbar_kwargs={}
+    ) -> "AnalysisBase":
         """Perform the calculation on a balanced slice of frames
         that have been setup prior to that using _setup_computation_groups()
 
@@ -513,10 +513,9 @@ class AnalysisBase(object):
         if len(frames) == 0:  # if `frames` were empty in `run` or `stop=0`
             return self
 
-        for idx, ts in enumerate(ProgressBar(
-                self._sliced_trajectory,
-                verbose=verbose,
-                **progressbar_kwargs)):
+        for idx, ts in enumerate(
+            ProgressBar(self._sliced_trajectory, verbose=verbose, **progressbar_kwargs)
+        ):
             self._frame_index = idx  # accessed later by subclasses
             self._ts = ts
             self.frames[idx] = ts.frame
@@ -637,13 +636,12 @@ class AnalysisBase(object):
         builtin_backends = {
             "serial": BackendSerial,
             "multiprocessing": BackendMultiprocessing,
-            "dask": BackendDask
+            "dask": BackendDask,
         }
 
         backend_class = builtin_backends.get(backend, backend)
         supported_backend_classes = [
-            builtin_backends.get(b)
-            for b in self.get_supported_backends()
+            builtin_backends.get(b) for b in self.get_supported_backends()
         ]
 
         # check for serial-only classes
@@ -823,7 +821,11 @@ class AnalysisBase(object):
         )
         self._setup_frames(
             trajectory=self._trajectory,
-            start=start, stop=stop, step=step, frames=frames)
+            start=start,
+            stop=stop,
+            step=step,
+            frames=frames,
+        )
         computation_groups = self._setup_computation_groups(
             start=start, stop=stop, step=step, frames=frames, n_parts=n_parts
         )
