@@ -112,27 +112,27 @@ Analysis classes
    :inherited-members:
 
    .. attribute:: results.dssp
-   
-      Contains the time series of the DSSP assignment as a 
+
+      Contains the time series of the DSSP assignment as a
       :class:`numpy.ndarray` array of shape ``(n_frames, n_residues)`` where each row
-      contains the assigned secondary structure character for each residue (whose 
+      contains the assigned secondary structure character for each residue (whose
       corresponding resid is stored in :attr:`results.resids`). The three characters
       are ['H', 'E', '-'] and representi alpha-helix, sheet and loop, respectively.
 
    .. attribute:: results.dssp_ndarray
-   
+
       Contains the one-hot encoding of the time series of the DSSP assignment
-      as a :class:`numpy.ndarray` Boolean array of shape ``(n_frames, n_residues, 3)`` 
+      as a :class:`numpy.ndarray` Boolean array of shape ``(n_frames, n_residues, 3)``
       where for each residue the encoding is stored as ``(3,)`` shape
-      :class:`numpy.ndarray` of Booleans so that ``True`` at index 0 represents loop 
-      ('-'), ``True`` at index 1 represents helix ('H'), and ``True`` at index 2 
+      :class:`numpy.ndarray` of Booleans so that ``True`` at index 0 represents loop
+      ('-'), ``True`` at index 1 represents helix ('H'), and ``True`` at index 2
       represents sheet 'E'.
 
       .. SeeAlso:: :func:`translate`
-      
+
 
    .. attribute:: results.resids
-   
+
       A :class:`numpy.ndarray` of length ``n_residues`` that contains the residue IDs
       (resids) for the protein residues that were assigned a secondary structure.
 
@@ -145,11 +145,13 @@ Functions
 """
 
 from typing import Union
-import numpy as np
-from MDAnalysis import Universe, AtomGroup
 
+import numpy as np
+
+from MDAnalysis import AtomGroup, Universe
+
+from ...due import Doi, due
 from ..base import AnalysisBase, ResultsGroup
-from ...due import due, Doi
 
 due.cite(
     Doi("10.1002/bip.360221211"),
@@ -163,8 +165,8 @@ del Doi
 
 try:  # pragma: no cover
     from pydssp.pydssp_numpy import (
-        assign,
         _get_hydrogen_atom_position,
+        assign,
     )
 
     HAS_PYDSSP = True
@@ -172,8 +174,8 @@ try:  # pragma: no cover
 except ModuleNotFoundError:
     HAS_PYDSSP = False
     from .pydssp_numpy import (
-        assign,
         _get_hydrogen_atom_position,
+        assign,
     )
 
 
