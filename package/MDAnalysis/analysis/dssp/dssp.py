@@ -375,12 +375,13 @@ class DSSP(AnalysisBase):
         coords = np.array(positions)
 
         # diagonal matrix of true values (non proline residues)
-        self._donor_mask = np.diag(
+        self._donor_mask = np.array(
             [
-                1 if res.resname != "PRO" else 0
-                for res in self._heavy_atoms["CA"]
+                (res1.resname != "PRO" and res2.resname != "PRO") or (i1 == i2)
+                for i1, res1 in enumerate(self._heavy_atoms["CA"])
+                for i2, res2 in enumerate(self._heavy_atoms["CA"])
             ]
-        )
+        ).reshape(len(self._heavy_atoms["CA"]), len(self._heavy_atoms["CA"]))
 
         if not self._guess_hydrogens:
             guessed_h_coords = _get_hydrogen_atom_position(
