@@ -118,6 +118,7 @@ def _get_hydrogen_atom_position(coord: np.ndarray) -> np.ndarray:
 
 def get_hbond_map(
     coord: np.ndarray,
+    donor_mask: np.ndarray | None = None,
     cutoff: float = DEFAULT_CUTOFF,
     margin: float = DEFAULT_MARGIN,
     return_e: bool = False,
@@ -194,15 +195,24 @@ def get_hbond_map(
     local_mask = ~np.eye(n_atoms, dtype=bool)
     local_mask *= ~np.diag(np.ones(n_atoms - 1, dtype=bool), k=-1)
     local_mask *= ~np.diag(np.ones(n_atoms - 2, dtype=bool), k=-2)
+    # mask for donor H absence (Proline)
+    donor_mask = (
+        np.array(donor_mask).astype(float)
+        if donor_mask is not None
+        else np.ones(n_atoms, dtype=float)
+    )
     # hydrogen bond map (continuous value extension of original definition)
     hbond_map = np.clip(cutoff - margin - e, a_min=-margin, a_max=margin)
     hbond_map = (np.sin(hbond_map / margin * np.pi / 2) + 1.0) / 2
     hbond_map = hbond_map * local_mask
+    hbond_map = hbond_map * donor_mask
 
     return hbond_map
 
 
-def assign(coord: np.ndarray) -> np.ndarray:
+def assign(
+    coord: np.ndarray, donor_mask: np.ndarray | None = None
+) -> np.ndarray:
     """Assigns secondary structure for a given coordinate array,
     either with or without assigned hydrogens
 
@@ -213,6 +223,9 @@ def assign(coord: np.ndarray) -> np.ndarray:
         without or with hydrogens, respectively. Second dimension `k` represents
         (N, CA, C, O) atoms coordinates (if k=4), or (N, CA, C, O, H) coordinates
         (when k=5).
+    donor_mask : np.ndarray, optional
+        mask for donor H absence, by default None. Used to ignore residues
+        that don't participate in hydrogen bonds (prolines).
 
     Returns
     -------
@@ -224,7 +237,7 @@ def assign(coord: np.ndarray) -> np.ndarray:
     .. versionadded:: 2.8.0
     """
     # get hydrogen bond map
-    hbmap = get_hbond_map(coord)
+    hbmap = get_hbond_map(coord, donor_mask)
     hbmap = np.swapaxes(hbmap, -1, -2)  # convert into "i:C=O, j:N-H" form
 
     # identify turn 3, 4, 5

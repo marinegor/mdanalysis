@@ -374,6 +374,14 @@ class DSSP(AnalysisBase):
         positions = [group.positions for group in self._heavy_atoms.values()]
         coords = np.array(positions)
 
+        # diagonal matrix of true values (non proline residues)
+        self._donor_mask = np.diag(
+            [
+                1 if res.resname != "PRO" else 0
+                for res in self._heavy_atoms["CA"]
+            ]
+        )
+
         if not self._guess_hydrogens:
             guessed_h_coords = _get_hydrogen_atom_position(
                 coords.swapaxes(0, 1)
@@ -393,7 +401,7 @@ class DSSP(AnalysisBase):
 
     def _single_frame(self):
         coords = self._get_coords()
-        dssp = assign(coords)
+        dssp = assign(coords, self._donor_mask)
         self.results.dssp_ndarray.append(dssp)
 
     def _conclude(self):
