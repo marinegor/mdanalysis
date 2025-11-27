@@ -118,21 +118,23 @@ class MMCIFParser(TopologyReaderBase):
             )
         model = gemmi.FlatStructure(structure)
 
-        decode_v = np.vectorize(chr)
+        char_v = np.vectorize(chr)
+        decode_v = np.vectorize(lambda b: b.decode())
 
-        altlocs = decode_v(model.altlocs)
+        altlocs = char_v(model.altlocs)
         serials = model.serials
-        names = atomtypes = np.vectorize(lambda b: b.decode())(model.atom_names)
+        names = decode_v(model.atom_names)
+        atomtypes = decode_v(model.element_names)
         chainids = np.array([row.tobytes().decode() for row in model.chain_ids])
         elements = model.elements
         formalcharges = model.charge
         occupancies = model.occ
-        record_types = decode_v(model.het_flags)
+        record_types = char_v(model.het_flags)
         tempfactors = model.b_iso
         resnames = np.array([row.tobytes().decode() for row in model.residue_names])
-        icodes = decode_v(model.icodes)
+        icodes = char_v(model.icodes)
         resids = model.resnums
-        weights = np.ones_like(altlocs)
+        weights = model.element_weights
 
         # (
         #     # altlocs_,  # at.altloc
