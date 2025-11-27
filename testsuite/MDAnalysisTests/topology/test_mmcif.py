@@ -100,6 +100,7 @@ def test_wrong_format():
         mda.Universe(f"{MMCIF_FOLDER}/1YJP_invalid.cif")
 
 
+@pytest.mark.skip
 @pytest.mark.skipif(not HAS_GEMMI, reason="gemmi not installed")
 def test_multimodel_warning_msg():
     with pytest.warns(

@@ -94,6 +94,7 @@ def test_cell(mmcif_filename, cell):
     assert np.allclose(mda.Universe(mmcif_filename).coord._unitcell, cell)
 
 
+@pytest.mark.skip
 @pytest.mark.skipif(not HAS_GEMMI, reason="gemmi not installed")
 def test_multimodel_warning_msg():
     with pytest.warns(

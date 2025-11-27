@@ -69,8 +69,8 @@ from ..core.topologyattrs import (
     Segids,
     Tempfactors,
 )
-from .base import TopologyReaderBase, change_squash
 from ..lib import util
+from .base import TopologyReaderBase, change_squash
 
 
 class MMCIFParser(TopologyReaderBase):
@@ -116,26 +116,40 @@ class MMCIFParser(TopologyReaderBase):
                 f"MMCIF model {self.filename} contains {len(structure)=} different models, "
                 "but only the first one will be used to assign the topology"
             )
-        model = structure[0]
+        model = gemmi.FlatStructure(structure)
+
+        decode_v = np.vectorize(chr)
+
+        altlocs = decode_v(model.altlocs)
+        serials = model.serials
+        names = atomtypes = np.vectorize(lambda b: b.decode())(model.atom_names)
+        chainids = np.array([row.tobytes().decode() for row in model.chain_ids])
+        elements = model.elements
+        formalcharges = model.charge
+        weights = ...
+        occupancies = model.occ
+        record_types = decode_v(model.het_flags)
+        tempfactors = model.b_iso
+        resnames = np.array([row.tobytes().decode() for row in model.residue_names])
 
         (
-            altlocs,  # at.altloc
-            serials,  # at.serial
-            names,  # at.name
-            atomtypes,  # at.name
+            # altlocs_,  # at.altloc
+            # serials,  # at.serial
+            # names,  # at.name
+            # atomtypes,  # at.name
             # ------------------
-            chainids,  # chain.name
-            elements,  # at.element.name
-            formalcharges,  # at.charge
+            # chainids,  # chain.name
+            # elements,  # at.element.name
+            # formalcharges,  # at.charge
             weights,  # at.element.weight
             # ------------------
-            occupancies,  # at.occ
-            record_types,  # res.het_flag
-            tempfactors,  # at.b_iso
+            # occupancies,  # at.occ
+            # record_types,  # res.het_flag
+            # tempfactors,  # at.b_iso
             # ------------------
             icodes,  # residue.seqid.icode
             resids,  # residue.seqid.num
-            resnames,  # residue.name
+            # resnames,  # residue.name
         ) = map(  # this construct takes np.ndarray of all lists of attributes, extracted from the `gemmi.Model`
             np.array,
             list(
@@ -145,26 +159,26 @@ class MMCIFParser(TopologyReaderBase):
                             # tuple of attributes
                             # extracted from residue, atom or chain in the structure
                             # ------------------
-                            atom.altloc,  # altlocs
-                            atom.serial,  # serials
-                            atom.name,  # names
-                            atom.name,  # atomtypes
+                            # atom.altloc,  # altlocs
+                            # atom.serial,  # serials
+                            # atom.name,  # names
+                            # atom.name,  # atomtypes
                             # ------------------
-                            chain.name,  # chainids
-                            atom.element.name,  # elements
-                            atom.charge,  # formalcharges
+                            # chain.name,  # chainids
+                            # atom.element.name,  # elements
+                            # atom.charge,  # formalcharges
                             atom.element.weight,  # weights
                             # ------------------
-                            atom.occ,  # occupancies
-                            residue.het_flag,  # record_types
-                            atom.b_iso,  # tempfactors
+                            # atom.occ,  # occupancies
+                            # residue.het_flag,  # record_types
+                            # atom.b_iso,  # tempfactors
                             # ------------------
                             residue.seqid.icode,  # icodes
                             residue.seqid.num,  # resids
-                            residue.name,  # resnames
+                            # residue.name,  # resnames
                         )
                         # the main loop over the `gemmi.Model` object
-                        for chain in model
+                        for chain in structure[0]
                         for residue in chain
                         for atom in residue
                     ]
