@@ -126,65 +126,67 @@ class MMCIFParser(TopologyReaderBase):
         chainids = np.array([row.tobytes().decode() for row in model.chain_ids])
         elements = model.elements
         formalcharges = model.charge
-        weights = ...
         occupancies = model.occ
         record_types = decode_v(model.het_flags)
         tempfactors = model.b_iso
         resnames = np.array([row.tobytes().decode() for row in model.residue_names])
+        icodes = decode_v(model.icodes)
+        resids = model.resnums
+        weights = np.ones_like(altlocs)
 
-        (
-            # altlocs_,  # at.altloc
-            # serials,  # at.serial
-            # names,  # at.name
-            # atomtypes,  # at.name
-            # ------------------
-            # chainids,  # chain.name
-            # elements,  # at.element.name
-            # formalcharges,  # at.charge
-            weights,  # at.element.weight
-            # ------------------
-            # occupancies,  # at.occ
-            # record_types,  # res.het_flag
-            # tempfactors,  # at.b_iso
-            # ------------------
-            icodes,  # residue.seqid.icode
-            resids,  # residue.seqid.num
-            # resnames,  # residue.name
-        ) = map(  # this construct takes np.ndarray of all lists of attributes, extracted from the `gemmi.Model`
-            np.array,
-            list(
-                zip(
-                    *[
-                        (
-                            # tuple of attributes
-                            # extracted from residue, atom or chain in the structure
-                            # ------------------
-                            # atom.altloc,  # altlocs
-                            # atom.serial,  # serials
-                            # atom.name,  # names
-                            # atom.name,  # atomtypes
-                            # ------------------
-                            # chain.name,  # chainids
-                            # atom.element.name,  # elements
-                            # atom.charge,  # formalcharges
-                            atom.element.weight,  # weights
-                            # ------------------
-                            # atom.occ,  # occupancies
-                            # residue.het_flag,  # record_types
-                            # atom.b_iso,  # tempfactors
-                            # ------------------
-                            residue.seqid.icode,  # icodes
-                            residue.seqid.num,  # resids
-                            # residue.name,  # resnames
-                        )
-                        # the main loop over the `gemmi.Model` object
-                        for chain in structure[0]
-                        for residue in chain
-                        for atom in residue
-                    ]
-                )
-            ),
-        )
+        # (
+        #     # altlocs_,  # at.altloc
+        #     # serials,  # at.serial
+        #     # names,  # at.name
+        #     # atomtypes,  # at.name
+        #     # ------------------
+        #     # chainids,  # chain.name
+        #     # elements,  # at.element.name
+        #     # formalcharges,  # at.charge
+        #     weights,  # at.element.weight
+        #     # ------------------
+        #     # occupancies,  # at.occ
+        #     # record_types,  # res.het_flag
+        #     # tempfactors,  # at.b_iso
+        #     # ------------------
+        #     icodes,  # residue.seqid.icode
+        #     resids,  # residue.seqid.num
+        #     # resnames,  # residue.name
+        # ) = map(  # this construct takes np.ndarray of all lists of attributes, extracted from the `gemmi.Model`
+        #     np.array,
+        #     list(
+        #         zip(
+        #             *[
+        #                 (
+        #                     # tuple of attributes
+        #                     # extracted from residue, atom or chain in the structure
+        #                     # ------------------
+        #                     # atom.altloc,  # altlocs
+        #                     # atom.serial,  # serials
+        #                     # atom.name,  # names
+        #                     # atom.name,  # atomtypes
+        #                     # ------------------
+        #                     # chain.name,  # chainids
+        #                     # atom.element.name,  # elements
+        #                     # atom.charge,  # formalcharges
+        #                     atom.element.weight,  # weights
+        #                     # ------------------
+        #                     # atom.occ,  # occupancies
+        #                     # residue.het_flag,  # record_types
+        #                     # atom.b_iso,  # tempfactors
+        #                     # ------------------
+        #                     residue.seqid.icode,  # icodes
+        #                     residue.seqid.num,  # resids
+        #                     # residue.name,  # resnames
+        #                 )
+        #                 # the main loop over the `gemmi.Model` object
+        #                 for chain in structure[0]
+        #                 for residue in chain
+        #                 for atom in residue
+        #             ]
+        #         )
+        #     ),
+        # )
 
         # fill in altlocs, since gemmi has '' as default
         altlocs = ["A" if not elem else elem for elem in altlocs]
